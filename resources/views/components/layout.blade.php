@@ -1,12 +1,10 @@
 @props(['title' => null])
 
 @php
-    $tabs = array_filter([
-        'login' =>     ['label' => 'login', 'guest' => true],
-        'dashboard' => ['label' => 'dashboard', 'can' => 'manager'],
-        'users' =>     ['label' => 'users', 'can' => 'admin'],
-        'client' =>    ['label' => 'client', 'can' => 'viewer', 'newTab' => true],
-    ], fn ($tab) => ($tab['guest'] ?? false) ? auth()->guest() : auth()->user()?->can($tab['can']));
+    $tabs = [
+        'dashboard' => ['label' => 'dashboard'],
+        'client' =>    ['label' => 'client', 'newTab' => true],
+    ];
 @endphp
 
 <!DOCTYPE html>
@@ -49,13 +47,6 @@
 
                 <div @class(['ml-auto flex items-end', isset($actions) ? $actions->attributes->get('class') : null])>
                     {{ $actions ?? '' }}
-
-                    @auth
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <x-button variant="muted" type="submit">Logout</x-button>
-                        </form>
-                    @endauth
                 </div>
             </nav>
 

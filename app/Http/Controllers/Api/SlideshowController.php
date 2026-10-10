@@ -19,8 +19,8 @@ class SlideshowController extends Controller
     {
         $validated = $request->validated();
 
-        $slideshow = DB::transaction(function () use ($request, $validated) {
-            $slideshow = $request->user()->slideshows()->create(['name' => $validated['name']]);
+        $slideshow = DB::transaction(function () use ($validated) {
+            $slideshow = Slideshow::create(['name' => $validated['name']]);
             $slideshow->items()->createMany($validated['sections']);
 
             return $slideshow;

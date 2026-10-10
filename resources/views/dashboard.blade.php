@@ -5,38 +5,27 @@
     </x-slot:actions>
 
     @php
-        $slideshows = \App\Models\Slideshow::with(["items", "author"])->orderByDesc("id")->get();
-        $authors = \App\Models\User::whereHas("slideshows")->orderBy("name")->get();
+        $slideshows = \App\Models\Slideshow::with("items")->orderByDesc("id")->get();
     @endphp
 
     <div x-data="{
         search: @js(request('search', '')),
-        author: @js(request('author', '')),
         init() {
             this.$watch('search', () => this.syncQuery());
-            this.$watch('author', () => this.syncQuery());
         },
         syncQuery() {
             const url = new URL(window.location);
 
             this.search ? url.searchParams.set('search', this.search) : url.searchParams.delete('search');
-            this.author ? url.searchParams.set('author', this.author) : url.searchParams.delete('author');
 
             history.replaceState(null, '', url);
         },
-        matches(name, author) {
-            return name.toLowerCase().includes(this.search.toLowerCase())
-                && (! this.author || this.author === String(author));
+        matches(name) {
+            return name.toLowerCase().includes(this.search.toLowerCase());
         },
     }">
     <div class="mb-2 flex gap-2">
         <x-input x-model="search" type="search" placeholder="Search by name" class="max-w-xs" />
-        <x-select x-model="author" class="max-w-xs">
-            <x-option value="">All authors</x-option>
-            @foreach ($authors as $author)
-                <x-option value="{{ $author->id }}">{{ $author->name }}</x-option>
-            @endforeach
-        </x-select>
     </div>
 
     <table class="w-full">
@@ -44,7 +33,6 @@
             <tr class="border-b border-mauve-700 text-left text-mauve-50">
                 <th class="px-2 font-bold">#</th>
                 <th class="px-2 font-bold">Name</th>
-                <th class="px-2 font-bold">Author</th>
                 <th class="px-2 font-bold">Created At</th>
                 <th class="px-2 font-bold">Updated At</th>
                 <th class="px-2 font-bold w-25"></th>
@@ -52,10 +40,9 @@
         </thead>
         <tbody>
             @foreach ($slideshows as $s)
-                <tr x-show="matches(@js($s->name), @js($s->user_id))">
+                <tr x-show="matches(@js($s->name))">
                     <td class="px-2 text-mauve-200 italic">{{ $s->id }}</td>
                     <td class="px-2 text-mauve-200 italic">{{ $s->name }}</td>
-                    <td class="px-2 text-mauve-200 italic">{{ $s->author->name }}</td>
                     <td class="px-2 text-mauve-200 italic">{{ $s->created_at }}</td>
                     <td class="px-2 text-mauve-200 italic">{{ $s->updated_at }}</td>
                     <td class="flex justify-end">
@@ -90,7 +77,7 @@
             @endforeach
             @if ($slideshows->isEmpty())
                 <tr>
-                    <td colspan="6" class="px-2 py-1 text-mauve-500 italic">Nothing here yet</td>
+                    <td colspan="5" class="px-2 py-1 text-mauve-500 italic">Nothing here yet</td>
                 </tr>
             @endif
         </tbody>
