@@ -1,0 +1,115 @@
+@props(['id', 'slideshow' => null])
+
+@php
+    $sections = $slideshow
+        ? $slideshow->items->sortBy('id')->map(fn ($item) => [
+            'type' => $item->type,
+            'duration' => $item->duration,
+            'data' => ['image' => $item->data['image'] ?? null],
+        ])->values()
+        : [];
+@endphp
+
+<dialog id="{{ $id }}" closedby="any" class="m-auto w-full max-w-md bg-mauve-900 p-4 text-left text-sm text-mauve-200 backdrop:bg-black/60">
+    <div class="space-y-3" x-data="{
+        name: @js($slideshow?->name ?? ''),
+        error: null,
+        sections: @js($sections),
+        endpoint: '{{ route('images.store') }}',
+        async upload(section, file) {
+            const body = new FormData();
+            body.append('image', file);
+
+            const response = await fetch(this.endpoint, {
+                method: 'POST',
+                headers: { Accept: 'application/json', 'X-CSRF-TOKEN': @js(csrf_token()) },
+                body,
+            });
+
+            if (response.ok) {
+                section.data.image = (await response.json()).id;
+            }
+        },
+        move(index, offset) {
+            this.sections.splice(index + offset, 0, ...this.sections.splice(index, 1));
+        },
+        async save() {
+            this.error = null;
+
+            try {
+                const response = await fetch(@js($slideshow ? route('slideshows.update', $slideshow) : route('slideshows.store')), {
+                    method: @js($slideshow ? 'PUT' : 'POST'),
+                    headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': @js(csrf_token()) },
+                    body: JSON.stringify({ name: this.name, sections: this.sections }),
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                    return;
+                }
+
+                this.error = (await response.json()).message;
+            } catch {
+                this.error = 'Could not save the slideshow.';
+            }
+        },
+    }">
+        <h2 class="text-lg font-bold text-mauve-50">{{ $slideshow ? 'Edit TV screen' : 'Create a new TV screen' }}</h2>
+        <dl class="grid grid-cols-[100px_1fr] items-center gap-y-1">
+            <dt class="text-mauve-400">Name</dt>
+            <dd><x-input x-model="name" /></dd>
+        </dl>
+
+        <template x-for="(section, index) in sections">
+            <dl class="grid grid-cols-[100px_1fr] items-center gap-y-1">
+                <dt class="col-span-2 flex gap-1 items-center">
+                    <button 
+                        type="button" class="cursor-pointer text-mauve-400 hover:text-mauve-100 disabled:cursor-default disabled:opacity-30" 
+                        :disabled="index === sections.length - 1" x-on:click="move(index, 1)"
+                    ><x-lucide-chevron-down class="size-4" /></button>
+                    <button 
+                        type="button" class="cursor-pointer text-mauve-400 hover:text-mauve-100 disabled:cursor-default disabled:opacity-30" 
+                        :disabled="index === 0" x-on:click="move(index, -1)"
+                    ><x-lucide-chevron-up class="size-4" /></button>
+                    <button 
+                        type="button" class="ml-auto cursor-pointer text-mauve-400 hover:underline" 
+                        x-on:click="sections.splice(index, 1)"
+                    >Remove</button>
+                </dt>
+                <dt class="text-mauve-400">Duration (s)</dt>
+                <dd><x-input x-model="section.duration" type="number" /></dd>
+                <dt class="text-mauve-400">Type</dt>
+                <dd>
+                    <x-select x-model="section.type">
+                        <x-option value="image">Image</x-option>
+                        <x-option value="clock">Clock</x-option>
+                    </x-select>
+                </dd>
+                <dt x-show="section.type == 'image'" class="text-mauve-400">Image</dt>
+                <dd x-show="section.type == 'image'">
+                    <label class="flex w-full cursor-pointer items-center justify-center gap-2 border border-mauve-700 p-8 text-mauve-400 hover:border-mauve-500">
+                        <template x-if="section.data.image">
+                            <img :src="`${endpoint}/${section.data.image}`" class="max-h-40">
+                        </template>
+                        <template x-if="!section.data.image">
+                            <span class="flex items-center gap-2">
+                                <x-lucide-upload class="size-4" />
+                                Upload image
+                            </span>
+                        </template>
+                        <input type="file" accept="image/*" class="hidden" x-on:change="upload(section, $event.target.files[0])">
+                    </label>
+                </dd>
+            </dl>
+        </template>
+
+        <p x-show="error" x-text="error" class="border border-red-800 bg-red-950 px-2 py-1 text-red-300"></p>
+
+        <div class="flex justify-end gap-2">
+            <x-button variant="outline" class="mr-auto" x-on:click="sections.push({ type: 'image', duration: 5, data: { image: null }})">Add Section</x-button>
+
+            <x-button variant="ghost" commandfor="{{ $id }}" command="close">Cancel</x-button>
+            <x-button x-on:click="save()">{{ $slideshow ? 'Save' : 'Create' }}</x-button>
+        </div>
+    </div>
+</dialog>
