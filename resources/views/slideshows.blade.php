@@ -1,9 +1,4 @@
 <x-layout>
-    <x-slot:actions>
-        <x-button variant="ghost" commandfor="create-dialog" command="show-modal">Create Slideshow</x-button>
-        <x-slideshow-dialog id="create-dialog" />
-    </x-slot:actions>
-
     @php
         $slideshows = \App\Models\Slideshow::with("items")->orderByDesc("id")->get();
     @endphp
@@ -24,8 +19,11 @@
             return name.toLowerCase().includes(this.search.toLowerCase());
         },
     }">
-    <div class="mb-2 flex gap-2">
+    <div class="mb-2 flex gap-2 items-center">
         <x-input x-model="search" type="search" placeholder="Search by name" class="max-w-xs" />
+
+        <x-button class="ml-auto" variant="ghost" commandfor="create-dialog" command="show-modal">Create Slideshow</x-button>
+        <x-slideshow-dialog id="create-dialog" />
     </div>
 
     <table class="w-full">
@@ -46,14 +44,6 @@
                     <td class="px-2 text-mauve-200 italic">{{ $s->created_at }}</td>
                     <td class="px-2 text-mauve-200 italic">{{ $s->updated_at }}</td>
                     <td class="flex justify-end">
-                        @if ($s->active)
-                            <span class="border border-transparent px-2 py-0.5 text-mauve-400">Active</span>
-                        @else
-                            <form method="POST" action="{{ route('slideshows.activate', $s) }}">
-                                @csrf
-                                <x-button variant="ghost" type="submit">Activate</x-button>
-                            </form>
-                        @endif
                         {{-- TODO: Investigate wether this is bad for hundreds of slideshows eg. having a lot of hidden previews. 
                              Maybe we'd wanna consider having a persistent preview that is moved around but i think html handles this decently.  --}}
                         <x-button variant="ghost" popovertarget="preview-{{ $s->id }}" style="anchor-name: --preview-{{ $s->id }}">Preview</x-button>

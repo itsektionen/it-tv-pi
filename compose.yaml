@@ -36,7 +36,10 @@ services:
         networks:
             - sail
         depends_on:
-            - laravel.test
+            laravel.test:
+                condition: service_started
+            mysql:
+                condition: service_healthy
     mysql:
         image: 'mysql:8.4'
         ports:

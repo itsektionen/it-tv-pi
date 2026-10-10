@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Events\ActiveSlideshowChanged;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSlideshowRequest;
+use App\Models\Screen;
 use App\Models\Slideshow;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class SlideshowController extends Controller
@@ -42,23 +41,9 @@ class SlideshowController extends Controller
             $slideshow->items()->createMany($validated['sections']);
         });
 
-        if ($slideshow->active) {
-            $this->restartClients();
-        }
+        Screen::showSlideshow($slideshow->screens, $slideshow);
 
         return response()->json($slideshow->load('items'));
-    }
-
-    public function activate(Request $request, Slideshow $slideshow)
-    {
-        DB::transaction(fn() => Slideshow::withoutTimestamps(function () use ($slideshow) {
-            Slideshow::whereKeyNot($slideshow->id)->update(['active' => false]);
-            $slideshow->forceFill(['active' => true])->save();
-        }));
-
-        $this->restartClients();
-
-        return $request->expectsJson() ? response()->json($slideshow) : back();
     }
 
     /**
@@ -66,22 +51,15 @@ class SlideshowController extends Controller
      */
     public function destroy(Request $request, Slideshow $slideshow)
     {
+        $screens = $slideshow->screens;
+
         DB::transaction(function () use ($slideshow) {
             $slideshow->items()->delete();
             $slideshow->delete();
         });
 
-        if ($slideshow->active) {
-            $this->restartClients();
-        }
+        Screen::showSlideshow($screens, null);
 
         return $request->expectsJson() ? response()->noContent() : back();
-    }
-
-    private function restartClients(): void
-    {
-        Cache::forever('slideshow.started_at', now()->getTimestampMs());
-
-        rescue(fn() => ActiveSlideshowChanged::dispatch());
     }
 }

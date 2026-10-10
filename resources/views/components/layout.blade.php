@@ -2,8 +2,8 @@
 
 @php
     $tabs = [
-        'dashboard' => ['label' => 'dashboard'],
-        'client' =>    ['label' => 'client', 'newTab' => true],
+        'slideshows' => ['label' => 'slideshows'],
+        'screens' =>   ['label' => 'screens'],
     ];
 @endphp
 
@@ -25,7 +25,7 @@
     <body class="bg-mauve-950 text-sm text-mauve-200">
         <div class="mx-auto max-w-6xl px-4 py-2">
             <header class="flex items-center gap-4 pb-2">
-                <a href="{{ route('dashboard') }}" class="flex size-16 items-center justify-center bg-mauve-800 text-4xl font-bold text-mauve-50">π</a>
+                <a href="{{ route('slideshows') }}" class="flex size-16 items-center justify-center bg-mauve-800 text-4xl font-bold text-mauve-50">π</a>
                 <div>
                     <h1 class="text-2xl font-bold text-mauve-50">ITTV π</h1>
                 </div>
@@ -40,7 +40,7 @@
                         @class([
                             'px-2 py-0.5',
                             'bg-mauve-700 text-mauve-50' => request()->routeIs($route),
-                            'text-mauve-400 hover:underline' => ! request()->routeIs($route),
+                            'text-mauve-400 hover:underline' => !request()->routeIs($route),
                         ])
                     >{{ $tab['label'] }}</a>
                 @endforeach
