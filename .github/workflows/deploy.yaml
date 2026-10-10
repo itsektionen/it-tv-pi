@@ -1,0 +1,17 @@
+name: Build and deploy
+
+on:
+  push:
+    branches: ["master"]
+
+jobs:
+  build-and-deploy:
+    permissions:
+      contents: read
+      packages: write
+    uses: itsektionen/andesite/.github/workflows/v1.yml@main
+    secrets: inherit
+    with:
+      deploy-dir: it-tv-pi
+      cache: "gha"
+      gha-mode: "max"

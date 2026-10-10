@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->trustProxies(at: '*');
         $middleware->statefulApi();
         $middleware->redirectUsersTo(fn(Request $request) => $request->user()->can('manager') ? route('dashboard') : route('client'));
     })
