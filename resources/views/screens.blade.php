@@ -33,6 +33,15 @@
                     <td class="px-2 text-mauve-200 italic">{{ $s->last_active_at ?? 'Never' }}</td>
                     <td class="px-2 text-mauve-200 italic">{{ $s->created_at }}</td>
                     <td class="flex justify-end">
+                        <x-button variant="ghost" popovertarget="preview-{{ $s->id }}" style="anchor-name: --preview-{{ $s->id }}">Preview</x-button>
+                        <div
+                            id="preview-{{ $s->id }}"
+                            popover
+                            class="inset-auto m-0 mt-1 border border-mauve-700 bg-black p-0"
+                            style="position-anchor: --preview-{{ $s->id }}; position-area: bottom span-left;"
+                        >
+                            <iframe src="{{ route('client', ["id" => $s]) }}" loading="lazy" class="block aspect-video w-120"></iframe>
+                        </div>
                         <x-button variant="ghost" commandfor="edit-dialog-{{ $s->id }}" command="show-modal">Edit</x-button>
                         <x-screen-dialog :id="'edit-dialog-'.$s->id" :screen="$s" />
                         <x-button variant="danger" commandfor="remove-dialog-{{ $s->id }}" command="show-modal">Remove</x-button>
