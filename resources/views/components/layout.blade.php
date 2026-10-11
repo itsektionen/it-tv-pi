@@ -4,6 +4,7 @@
     $tabs = [
         'slideshows' => ['label' => 'slideshows'],
         'screens' =>   ['label' => 'screens'],
+        'images' =>    ['label' => 'images'],
     ];
 @endphp
 

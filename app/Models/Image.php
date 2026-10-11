@@ -5,9 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable("path")]
+#[Fillable("name", "path", "folder_id")]
 class Image extends Model
 {
     use HasUuids;
+
+    public function folder(): BelongsTo
+    {
+        return $this->belongsTo(Folder::class);
+    }
 }

@@ -16,20 +16,6 @@
         error: null,
         sections: @js($sections),
         endpoint: '{{ route('images.store') }}',
-        async upload(section, file) {
-            const body = new FormData();
-            body.append('image', file);
-
-            const response = await fetch(this.endpoint, {
-                method: 'POST',
-                headers: { Accept: 'application/json', 'X-CSRF-TOKEN': @js(csrf_token()) },
-                body,
-            });
-
-            if (response.ok) {
-                section.data.image = (await response.json()).id;
-            }
-        },
         move(index, offset) {
             this.sections.splice(index + offset, 0, ...this.sections.splice(index, 1));
         },
@@ -94,19 +80,15 @@
                             </x-select>
                         </dd>
                         <dt x-show="section.type == 'image'" class="text-mauve-400">Image</dt>
-                        <dd x-show="section.type == 'image'">
-                            <label class="flex w-full cursor-pointer items-center justify-center gap-2 border border-mauve-700 p-8 text-mauve-400 hover:border-mauve-500">
-                                <template x-if="section.data.image">
-                                    <img :src="`${endpoint}/${section.data.image}`" class="max-h-40">
-                                </template>
-                                <template x-if="!section.data.image">
-                                    <span class="flex items-center gap-2">
-                                        <x-lucide-upload class="size-4" />
-                                        Upload image
-                                    </span>
-                                </template>
-                                <input type="file" accept="image/*" class="hidden" x-on:change="upload(section, $event.target.files[0])">
-                            </label>
+                        <dd x-show="section.type == 'image'" class="space-y-1">
+                            <x-button
+                                variant="outline"
+                                class="w-full"
+                                x-on:click="$dispatch('pick-image', (image) => section.data.image = image)"
+                            >Select image</x-button>
+                            <template x-if="section.data.image">
+                                <img :src="`${endpoint}/${section.data.image}`" class="max-h-40 border border-mauve-700">
+                            </template>
                         </dd>
                     </div>
                 </dl>

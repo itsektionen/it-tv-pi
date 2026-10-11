@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\FolderController;
 use App\Http\Controllers\Api\ImageController;
 use App\Http\Controllers\Api\ScreenController;
 use App\Http\Controllers\Api\ScreenGroupController;
@@ -9,7 +10,8 @@ use Illuminate\Support\Facades\Route;
 Route::prefix("v1")->group(function () {
     Route::apiResource("images", ImageController::class)->only("show");
 
-    Route::apiResource("images", ImageController::class)->only("store");
+    Route::apiResource("images", ImageController::class)->only(["store", "update", "destroy"]);
+    Route::apiResource("folders", FolderController::class)->only(["store", "destroy"]);
     Route::apiResource("slideshows", SlideshowController::class)->only(["store", "update", "destroy"]);
     Route::apiResource("screens", ScreenController::class)->only(["update", "destroy"]);
     Route::post("screens/{screen}/activate", [ScreenController::class, "activate"])->name("screens.activate");

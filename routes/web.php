@@ -21,3 +21,4 @@ Route::get('/preview/{slideshow}', fn(Slideshow $slideshow) => view('client', [
 
 Route::view('/', 'slideshows')->name('slideshows');
 Route::view('/screens', 'screens')->name('screens');
+Route::view('/images', 'images')->name('images');

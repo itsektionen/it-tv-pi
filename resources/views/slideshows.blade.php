@@ -24,6 +24,7 @@
 
         <x-button class="ml-auto" variant="ghost" commandfor="create-dialog" command="show-modal">Create Slideshow</x-button>
         <x-slideshow-dialog id="create-dialog" />
+        <x-image-picker-dialog id="image-picker-dialog" />
     </div>
 
     <table class="w-full">

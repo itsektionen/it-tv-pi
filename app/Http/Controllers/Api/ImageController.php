@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateImageRequest;
 use App\Models\Image;
+use App\Models\SlideshowItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ImageController extends Controller
 {
@@ -32,16 +35,19 @@ class ImageController extends Controller
     {
         $validated = $request->validate([
             'image' => ['required', 'image', 'max:10240'],
+            'folder_id' => ['nullable', 'integer', 'exists:folders,id'],
         ]);
 
         $file = $validated['image'];
 
         $image = new Image();
         $image->id = $image->newUniqueId();
+        $image->name = Str::limit($file->getClientOriginalName(), 255, '');
+        $image->folder_id = $validated['folder_id'] ?? null;
         $image->path = $file->storeAs('images', "{$image->id}.{$file->extension()}");
         $image->save();
 
-        return response()->json($image, 201);
+        return $request->expectsJson() ? response()->json($image, 201) : back();
     }
 
     /**
@@ -63,16 +69,23 @@ class ImageController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Image $image)
+    public function update(UpdateImageRequest $request, Image $image)
     {
-        //
+        $image->update($request->validated());
+
+        return $request->expectsJson() ? response()->json($image) : back();
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Image $image)
+    public function destroy(Request $request, Image $image)
     {
-        //
+        abort_if(SlideshowItem::where('data->image', $image->id)->exists(), 409, 'This image is used in a slideshow.');
+
+        Storage::delete($image->path);
+        $image->delete();
+
+        return $request->expectsJson() ? response()->noContent() : back();
     }
 }
