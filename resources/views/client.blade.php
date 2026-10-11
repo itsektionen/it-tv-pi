@@ -54,19 +54,28 @@
 
                     this.current = this.items.findIndex((item) => (elapsed -= item.duration * 1000) < 0);
                 },
+                loaded(index) {
+                    const count = this.items.length;
+
+                    return [-1, 0, 1].some((step) => ((this.current + step) % count + count) % count === index);
+                },
             }">
                 <template x-for="(item, index) in items">
                     <div
                         class="absolute inset-0 flex items-center justify-center transition-opacity duration-1000"
                         :class="current === index ? 'opacity-100' : 'opacity-0'"
                     >
-                        <template x-if="item.type === 'image'">
-                            <img :src="item.image" class="size-full object-contain">
-                        </template>
-                        <template x-if="item.type === 'clock'">
-                            <div class="w-fit flex items-center flex-col">
-                                <div class="flex justify-between text-[11vw] leading-none text-mauve-300 tabular-nums" x-text="now.toLocaleDateString('sv-SE', { timeZone: 'Europe/Stockholm' })"></div>
-                                <div class="text-[30vw] leading-none font-bold tabular-nums" x-text="now.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Stockholm' })"></div>
+                        <template x-if="loaded(index)">
+                            <div class="contents">
+                                <template x-if="item.type === 'image'">
+                                    <img :src="item.image" class="size-full object-contain">
+                                </template>
+                                <template x-if="item.type === 'clock'">
+                                    <div class="w-fit flex items-center flex-col">
+                                        <div class="flex justify-between text-[11vw] leading-none text-mauve-300 tabular-nums" x-text="now.toLocaleDateString('sv-SE', { timeZone: 'Europe/Stockholm' })"></div>
+                                        <div class="text-[30vw] leading-none font-bold tabular-nums" x-text="now.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Stockholm' })"></div>
+                                    </div>
+                                </template>
                             </div>
                         </template>
                     </div>
