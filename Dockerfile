@@ -16,8 +16,10 @@ ARG VITE_REVERB_SCHEME=https
 
 USER root
 
+RUN install-php-extensions gd
+
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends nodejs npm php8.4-gd \
+    && apt-get install -y --no-install-recommends nodejs npm \
     && npm install -g pnpm@10 \
     && pnpm install --frozen-lockfile \
     && pnpm run build \
