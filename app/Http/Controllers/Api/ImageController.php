@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Exceptions\ImageException;
 use Intervention\Image\Format;
+use RuntimeException;
 use \App\Models\Image;
 
 class ImageController extends Controller
@@ -51,12 +52,19 @@ class ImageController extends Controller
         $image->preview_path = "previews/{$image->id}.webp";
 
         try {
-            $preview = \Intervention\Image\Laravel\Facades\Image::decode(Storage::get($image->path))
+            $path = Storage::path($image->path);
+            [$width, $height] = getimagesize($path) ?: [0, 0];
+
+            if ($width * $height > 25_000_000) {
+                throw new RuntimeException("Image is too large ({$width}x{$height})");
+            }
+
+            $preview = \Intervention\Image\Laravel\Facades\Image::decodePath($path)
                 ->scaleDown(width: 150)
                 ->encodeUsingFormat(Format::WEBP);
 
             Storage::put($image->preview_path, $preview->toString());
-        } catch (ImageException $e) {
+        } catch (ImageException | RuntimeException $e) {
             Log::warning("Could not create preview for {$image->path}: {$e->getMessage()}");
             $image->preview_path = $image->path;
         }

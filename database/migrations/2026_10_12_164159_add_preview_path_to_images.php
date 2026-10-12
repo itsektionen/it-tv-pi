@@ -2,8 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -17,7 +15,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        $mb32 = 32 * 1000 * 1000;
+        $maxPixels = 25_000_000;
 
         if (!Schema::hasColumn('images', 'preview_path')) {
             Schema::table('images', function (Blueprint $table) {
@@ -33,16 +31,19 @@ return new class extends Migration {
             $previewPath = "previews/" . $filenameWithoutExtension . ".webp";
 
             try {
-                if (Storage::size($imageModel->path) > $mb32) {
-                    throw new Exception("File is too big " . Storage::size($imageModel->path) / 1000 / 1000 . "MB");
+                $path = Storage::path($imageModel->path);
+                [$width, $height] = getimagesize($path) ?: [0, 0];
+
+                if ($width * $height > $maxPixels) {
+                    throw new RuntimeException("Image is too large ({$width}x{$height})");
                 }
 
-                $preview = Image::decode(Storage::get($imageModel->path))
+                $preview = Image::decodePath($path)
                     ->scaleDown(width: 150)
                     ->encodeUsingFormat(Format::WEBP);
 
                 Storage::put($previewPath, $preview->toString());
-            } catch (ImageException $e) {
+            } catch (ImageException | RuntimeException $e) {
                 Log::warning("Could not create preview for {$imageModel->path}: {$e->getMessage()}");
                 $previewPath = $imageModel->path;
             }
