@@ -3,6 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
@@ -20,7 +22,12 @@ return new class extends Migration {
             });
         }
 
+        Storage::delete("previews");
+
         foreach (\App\Models\Image::all() as $imageModel) {
+            Log::info($imageModel->name);
+            Log::info($imageModel->path);
+
             $filenameWithExtension = explode('/', $imageModel->path)[1];
             $filenameWithoutExtension = explode('.', $filenameWithExtension)[0];
             $previewPath = "previews/" . $filenameWithoutExtension . ".webp";
