@@ -60,7 +60,7 @@ class ImageController extends Controller
             }
 
             $preview = \Intervention\Image\Laravel\Facades\Image::decodePath($path)
-                ->scaleDown(width: 150)
+                ->scaleDown(width: 400)
                 ->encodeUsingFormat(Format::WEBP);
 
             Storage::put($image->preview_path, $preview->toString());

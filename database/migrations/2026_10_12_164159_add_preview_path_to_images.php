@@ -39,7 +39,7 @@ return new class extends Migration {
                 }
 
                 $preview = Image::decodePath($path)
-                    ->scaleDown(width: 150)
+                    ->scaleDown(width: 400)
                     ->encodeUsingFormat(Format::WEBP);
 
                 Storage::put($previewPath, $preview->toString());
