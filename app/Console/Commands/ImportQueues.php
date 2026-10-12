@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\select;
+use function Laravel\Prompts\text;
 use function Laravel\Prompts\textarea;
 
 #[Signature('app:import-queues')]
@@ -59,15 +61,31 @@ class ImportQueues extends Command
 
                 if (!$image) {
                     $this->warn("Image not found in {$name}: {$url}");
+                }
 
-                    if (!confirm('Skip this item and continue?')) {
+                while (!$image) {
+                    $choice = select(
+                        label: 'Skip this item and continue?',
+                        options: ['yes' => 'Yes', 'no' => 'No', 'manual' => 'Manual path'],
+                    );
+
+                    if ($choice === 'yes') {
+                        continue 2;
+                    }
+
+                    if ($choice === 'no') {
                         DB::rollBack();
                         $this->error("Image {$url} not found, nothing was imported.");
 
                         return self::FAILURE;
                     }
 
-                    continue;
+                    $path = text(label: 'Image path', placeholder: '/Folder/Subfolder/image.jpg', required: true, hint: 'Folder path as shown in the UI followed by the image name');
+                    $image = $this->findImage($path);
+
+                    if (!$image) {
+                        $this->warn("Image not found: {$path}");
+                    }
                 }
 
                 $items[] = ['type' => 'image', 'duration' => $duration, 'data' => ['image' => $image->id]];
@@ -83,7 +101,7 @@ class ImportQueues extends Command
 
     private function findImage(string $url): ?Image
     {
-        $parts = explode('/', Str::after($url, 'album/'));
+        $parts = explode('/', trim(Str::after($url, 'album/'), '/'));
         $name = array_pop($parts);
         $folderId = null;
 
