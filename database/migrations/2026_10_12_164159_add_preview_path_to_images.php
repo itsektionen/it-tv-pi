@@ -17,6 +17,8 @@ return new class extends Migration {
      */
     public function up(): void
     {
+        $mb32 = 32 * 1000 * 1000;
+
         if (!Schema::hasColumn('images', 'preview_path')) {
             Schema::table('images', function (Blueprint $table) {
                 $table->string('preview_path')->nullable()->after('path');
@@ -31,6 +33,10 @@ return new class extends Migration {
             $previewPath = "previews/" . $filenameWithoutExtension . ".webp";
 
             try {
+                if (Storage::size($imageModel->path) > $mb32) {
+                    throw new Exception("File is too big " . Storage::size($imageModel->path) / 1000 / 1000 . "MB");
+                }
+
                 $preview = Image::decode(Storage::get($imageModel->path))
                     ->scaleDown(width: 150)
                     ->encodeUsingFormat(Format::WEBP);
