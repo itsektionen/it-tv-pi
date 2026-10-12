@@ -14,9 +14,11 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('images', function (Blueprint $table) {
-            $table->string('preview_path')->nullable()->after('path');
-        });
+        if (!Schema::hasColumn('images', 'preview_path')) {
+            Schema::table('images', function (Blueprint $table) {
+                $table->string('preview_path')->nullable()->after('path');
+            });
+        }
 
         foreach (\App\Models\Image::all() as $imageModel) {
             $filenameWithExtension = explode('/', $imageModel->path)[1];
@@ -33,8 +35,6 @@ return new class extends Migration {
                 "preview_path" => $previewPath
             ]);
         }
-
-
 
         Schema::table('images', function (Blueprint $table) {
             $table->string('preview_path')->nullable(false)->change();
