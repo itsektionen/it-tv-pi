@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable("name", "path", "folder_id")]
+#[Fillable("name", "path", "preview_path", "folder_id")]
 class Image extends Model
 {
     use HasUuids;

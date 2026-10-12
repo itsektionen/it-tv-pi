@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix("v1")->group(function () {
     Route::apiResource("images", ImageController::class)->only("show");
+    Route::get("images/preview/{image}", [ImageController::class, "showPreview"])->name("images.showPreview");
 
     Route::apiResource("images", ImageController::class)->only(["store", "update", "destroy"]);
     Route::apiResource("folders", FolderController::class)->only(["store", "destroy"]);
