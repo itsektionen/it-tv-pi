@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Exceptions\ImageException;
 use Intervention\Image\Laravel\Facades\Image;
 use Intervention\Image\Format;
 
@@ -22,21 +23,23 @@ return new class extends Migration {
             });
         }
 
-        Storage::delete("previews");
+        Storage::deleteDirectory("previews");
 
         foreach (\App\Models\Image::all() as $imageModel) {
-            Log::info($imageModel->name);
-            Log::info($imageModel->path);
-
             $filenameWithExtension = explode('/', $imageModel->path)[1];
             $filenameWithoutExtension = explode('.', $filenameWithExtension)[0];
             $previewPath = "previews/" . $filenameWithoutExtension . ".webp";
 
-            $preview = Image::decode(Storage::get($imageModel->path))
-                ->scaleDown(width: 150)
-                ->encodeUsingFormat(Format::WEBP);
+            try {
+                $preview = Image::decode(Storage::get($imageModel->path))
+                    ->scaleDown(width: 150)
+                    ->encodeUsingFormat(Format::WEBP);
 
-            Storage::put($previewPath, $preview->toString());
+                Storage::put($previewPath, $preview->toString());
+            } catch (ImageException $e) {
+                Log::warning("Could not create preview for {$imageModel->path}: {$e->getMessage()}");
+                $previewPath = $imageModel->path;
+            }
 
             $imageModel->update([
                 "preview_path" => $previewPath

@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateImageRequest;
 use App\Models\SlideshowItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Intervention\Image\Exceptions\ImageException;
 use Intervention\Image\Format;
 use \App\Models\Image;
 
@@ -46,22 +48,20 @@ class ImageController extends Controller
         $image->name = Str::limit($file->getClientOriginalName(), 255, '');
         $image->folder_id = $validated['folder_id'] ?? null;
         $image->path = $file->storeAs('images', "{$image->id}.{$file->extension()}");
-        $image->preview_path = "";
+        $image->preview_path = "previews/{$image->id}.webp";
+
+        try {
+            $preview = \Intervention\Image\Laravel\Facades\Image::decode(Storage::get($image->path))
+                ->scaleDown(width: 150)
+                ->encodeUsingFormat(Format::WEBP);
+
+            Storage::put($image->preview_path, $preview->toString());
+        } catch (ImageException $e) {
+            Log::warning("Could not create preview for {$image->path}: {$e->getMessage()}");
+            $image->preview_path = $image->path;
+        }
+
         $image->save();
-
-        $filenameWithExtension = explode('/', $image->path)[1];
-        $filenameWithoutExtension = explode('.', $filenameWithExtension)[0];
-        $previewPath = "previews/" . $filenameWithoutExtension . ".webp";
-
-        $image->update([
-            "preview_path" => $previewPath
-        ]);
-
-        $preview = \Intervention\Image\Laravel\Facades\Image::decode(Storage::get($image->path))
-            ->scaleDown(width: 150)
-            ->encodeUsingFormat(Format::WEBP);
-
-        Storage::put($image->preview_path, $preview->toString());
 
         return $request->expectsJson() ? response()->json($image, 201) : back();
     }
