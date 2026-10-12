@@ -79,12 +79,12 @@ class ImageController extends Controller
      */
     public function show(Image $image)
     {
-        return Storage::response($image->path);
+        return Storage::response($image->path, headers: ['Cache-Control' => 'public, max-age=31536000, immutable']);
     }
 
     public function showPreview(Image $image)
     {
-        return Storage::response($image->preview_path);
+        return Storage::response($image->preview_path, headers: ['Cache-Control' => 'public, max-age=31536000, immutable']);
     }
 
     /**
