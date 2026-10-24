@@ -42,11 +42,19 @@
         </header>
 
         <nav class="flex items-end border-b-[3px] border-mauve-700">
+            <div class="mb-1 w-48 lg:hidden">
+                <x-select onchange="window.location.href = this.value">
+                    @foreach ($tabs as $route => $tab)
+                        <x-option value="{{ route($route) }}" :selected="request()->routeIs($route)">{{ $tab['label'] }}</x-option>
+                    @endforeach
+                </x-select>
+            </div>
+
             @foreach ($tabs as $route => $tab)
                 <a href="{{ route($route) }}" @if ($tab['newTab'] ?? false) target="_blank" @endif
                     @if (request()->routeIs($route)) aria-current="page" @endif
                     @class([
-                        'px-2 py-0.5',
+                        'hidden lg:block px-2 py-0.5',
                         'bg-mauve-700 text-mauve-50' => request()->routeIs($route),
                         'text-mauve-400 hover:underline' => !request()->routeIs($route),
                     ])>{{ $tab['label'] }}</a>
