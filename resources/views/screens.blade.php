@@ -59,7 +59,7 @@
                             <iframe src="{{ route('client', ['id' => $s]) }}" loading="lazy"
                                 class="block aspect-video w-120"></iframe>
                         </div>
-                        @can('manager')
+                        @can('admin')
                             <x-button variant="ghost" commandfor="edit-dialog-{{ $s->id }}"
                                 command="show-modal">Edit</x-button>
                             <x-screen-dialog :id="'edit-dialog-' . $s->id" :screen="$s" />
@@ -121,6 +121,8 @@
                                 commandfor="slideshow-group-dialog-{{ $g->id }}" command="show-modal">Set
                                 Slideshow</x-button>
                             <x-screen-group-slideshow-dialog :id="'slideshow-group-dialog-' . $g->id" :screen-group="$g" :slideshows="$slideshows" />
+                        @endcan
+                        @can('admin')
                             <x-button variant="ghost" commandfor="edit-group-dialog-{{ $g->id }}"
                                 command="show-modal">Edit</x-button>
                             <x-screen-group-dialog :id="'edit-group-dialog-' . $g->id" :screens="$screens" :screen-group="$g" />

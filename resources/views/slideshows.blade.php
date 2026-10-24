@@ -61,6 +61,8 @@
                                 <x-button variant="ghost" commandfor="edit-dialog-{{ $s->id }}"
                                     command="show-modal">Edit</x-button>
                                 <x-slideshow-dialog :id="'edit-dialog-' . $s->id" :slideshow="$s" />
+                            @endcan
+                            @can('admin')
                                 <x-button variant="danger" commandfor="remove-dialog-{{ $s->id }}"
                                     command="show-modal">Remove</x-button>
                                 <x-confirm-dialog :id="'remove-dialog-' . $s->id" :action="route('slideshows.destroy', $s)" method="DELETE">

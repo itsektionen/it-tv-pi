@@ -13,13 +13,15 @@
                         x-show="selected === @js($folder->id)" commandfor="create-folder-dialog"
                         command="show-modal" x-on:click="parent = @js($folder->id)"><x-lucide-folder-plus
                             class="size-4 stroke-mauve-300 hover:stroke-mauve-50" /></button>
+                @endcan
+                @can('admin')
                     <button type="button" class="cursor-pointer px-1" title="Remove {{ $folder->name }}"
                         x-show="selected === @js($folder->id)"
                         commandfor="remove-folder-dialog-{{ $folder->id }}" command="show-modal"><x-lucide-trash
                             class="size-4 stroke-mauve-300 hover:stroke-red-400" /></button>
                 @endcan
             </div>
-            @can('manager')
+            @can('admin')
                 <x-confirm-dialog :id="'remove-folder-dialog-' . $folder->id" :action="route('folders.destroy', $folder)" method="DELETE">
                     Remove folder <span class="font-bold text-mauve-50">{{ $folder->name }}</span>? Its subfolders move up
                     one level and its images become uncategorized.

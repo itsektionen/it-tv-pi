@@ -60,6 +60,9 @@
         </div>
 
         <x-folder-dialog id="create-folder-dialog" />
+    @endcan
+
+    @can('admin')
         <x-image-dialog id="edit-image-dialog" :folders="$folders" />
         <x-confirm-dialog id="remove-image-dialog" action="" x-bind:action="target && `${endpoint}/${target.id}`"
             method="DELETE">
@@ -98,7 +101,7 @@
                     <figcaption class="flex items-center gap-1 px-1 text-mauve-200 italic">
                         <a class="min-w-0 flex-1 truncate" title="{{ $image->name }}">{{ $image->name }}</a>
 
-                        @can('manager')
+                        @can('admin')
                             <button type="button" class="cursor-pointer" title="Edit" commandfor="edit-image-dialog"
                                 command="show-modal" x-on:click="target = @js($image->only('id', 'name', 'folder_id'))">
                                 <x-lucide-pen class="size-4 shrink-0 stroke-mauve-500 hover:stroke-mauve-100" />

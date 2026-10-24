@@ -44,6 +44,8 @@
                                 <x-confirm-dialog :id="'activate-dialog-' . $p->id" :action="route('presets.activate', $p)">
                                     Activate preset <span class="font-bold text-mauve-50">{{ $p->name }}</span>?
                                 </x-confirm-dialog>
+                            @endcan
+                            @can('admin')
                                 <x-button variant="ghost" commandfor="edit-dialog-{{ $p->id }}"
                                     command="show-modal">Edit</x-button>
                                 <x-preset-dialog :id="'edit-dialog-' . $p->id" :preset="$p" :screenGroups="$screenGroups" :slideshows="$slideshows" />
