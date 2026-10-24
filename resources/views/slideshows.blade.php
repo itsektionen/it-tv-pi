@@ -71,6 +71,23 @@
                             @endcan
                         </td>
                     </tr>
+                    <tr x-show="matches(@js($s->name))" class="slideshow-display">
+                        <td colspan="4" class="px-2 pb-2">
+                            <div class="flex gap-1 overflow-x-auto">
+                                @foreach ($s->items->sortBy('id') as $item)
+                                    @if ($item->type === 'image')
+                                        <img src="{{ route('images.showPreview', $item->data['image']) }}"
+                                            alt="" loading="lazy"
+                                            class="aspect-video w-40 shrink-0 border border-mauve-700 bg-black object-contain">
+                                    @else
+                                        <div
+                                            class="flex aspect-video w-40 shrink-0 items-center justify-center border border-mauve-700 bg-black text-mauve-200">
+                                            {{ ucfirst($item->type) }}</div>
+                                    @endif
+                                @endforeach
+                            </div>
+                        </td>
+                    </tr>
                 @endforeach
                 @if ($slideshows->isEmpty())
                     <tr>

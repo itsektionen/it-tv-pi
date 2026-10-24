@@ -11,7 +11,12 @@
 }
 
 @layer base {
-    tbody tr:nth-child(even of :not([style*="display: none"])) {
+    tbody:not(:has(.slideshow-display))
+        tr:nth-child(even of :not([style*="display: none"])),
+    tbody:has(.slideshow-display)
+        tr:nth-child(4n + 3 of :not([style*="display: none"])),
+    tbody:has(.slideshow-display)
+        tr:nth-child(4n of :not([style*="display: none"])) {
         background-color: color-mix(
             in oklab,
             var(--color-mauve-950),
