@@ -22,10 +22,12 @@
         <div class="mb-2 flex gap-2 items-center">
             <x-input x-model="search" type="search" placeholder="Search by name" class="max-w-xs" />
 
-            <x-button class="ml-auto" variant="ghost" commandfor="create-dialog" command="show-modal">Create
-                Slideshow</x-button>
-            <x-slideshow-dialog id="create-dialog" />
-            <x-image-picker-dialog id="image-picker-dialog" />
+            @can('manager')
+                <x-button class="ml-auto" variant="ghost" commandfor="create-dialog" command="show-modal">Create
+                    Slideshow</x-button>
+                <x-slideshow-dialog id="create-dialog" />
+                <x-image-picker-dialog id="image-picker-dialog" />
+            @endcan
         </div>
 
         <table class="w-full">
@@ -55,14 +57,16 @@
                                     class="block aspect-video w-120"></iframe>
                             </div>
                             {{-- TODO: Investigate the same here --..-- --}}
-                            <x-button variant="ghost" commandfor="edit-dialog-{{ $s->id }}"
-                                command="show-modal">Edit</x-button>
-                            <x-slideshow-dialog :id="'edit-dialog-' . $s->id" :slideshow="$s" />
-                            <x-button variant="danger" commandfor="remove-dialog-{{ $s->id }}"
-                                command="show-modal">Remove</x-button>
-                            <x-confirm-dialog :id="'remove-dialog-' . $s->id" :action="route('slideshows.destroy', $s)" method="DELETE">
-                                Remove slideshow <span class="font-bold text-mauve-50">{{ $s->name }}</span>?
-                            </x-confirm-dialog>
+                            @can('manager')
+                                <x-button variant="ghost" commandfor="edit-dialog-{{ $s->id }}"
+                                    command="show-modal">Edit</x-button>
+                                <x-slideshow-dialog :id="'edit-dialog-' . $s->id" :slideshow="$s" />
+                                <x-button variant="danger" commandfor="remove-dialog-{{ $s->id }}"
+                                    command="show-modal">Remove</x-button>
+                                <x-confirm-dialog :id="'remove-dialog-' . $s->id" :action="route('slideshows.destroy', $s)" method="DELETE">
+                                    Remove slideshow <span class="font-bold text-mauve-50">{{ $s->name }}</span>?
+                                </x-confirm-dialog>
+                            @endcan
                         </td>
                     </tr>
                 @endforeach

@@ -2,9 +2,12 @@
 
 namespace App\Providers;
 
+use App\Enums\Permission;
 use App\Models\Screen;
+use App\Models\User;
 use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Reverb\Events\ChannelCreated;
 use Laravel\Reverb\Events\ChannelRemoved;
@@ -31,5 +34,9 @@ class AppServiceProvider extends ServiceProvider
                 Screen::resetPresence();
             }
         });
+
+        foreach (Permission::cases() as $permission) {
+            Gate::define($permission->value, fn(User $user) => $user->permission->includes($permission));
+        }
     }
 }

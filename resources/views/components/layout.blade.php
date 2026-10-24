@@ -1,12 +1,17 @@
 @props(['title' => null])
 
 @php
-    $tabs = [
-        'slideshows' => ['label' => 'slideshows'],
-        'screens' => ['label' => 'screens'],
-        'presets' => ['label' => 'presets'],
-        'images' => ['label' => 'images'],
-    ];
+    $tabs = array_filter(
+        [
+            'login' => ['label' => 'login', 'guest' => true],
+            'slideshows' => ['label' => 'slideshows', 'can' => 'viewer'],
+            'screens' => ['label' => 'screens', 'can' => 'viewer'],
+            'presets' => ['label' => 'presets', 'can' => 'viewer'],
+            'images' => ['label' => 'images', 'can' => 'viewer'],
+            'users' => ['label' => 'users', 'can' => 'admin'],
+        ],
+        fn($tab) => $tab['guest'] ?? false ? auth()->guest() : auth()->user()?->can($tab['can']),
+    );
 @endphp
 
 <!DOCTYPE html>
@@ -52,6 +57,13 @@
                 isset($actions) ? $actions->attributes->get('class') : null,
             ])>
                 {{ $actions ?? '' }}
+
+                @auth
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <x-button variant="muted" type="submit">Logout</x-button>
+                    </form>
+                @endauth
             </div>
         </nav>
 

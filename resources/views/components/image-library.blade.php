@@ -46,24 +46,26 @@
         return folder ? `${folder.parent_id ? this.path(folder.parent_id) : ''}/${folder.name}` : '/';
     },
 }">
-    <div class="flex justify-end pb-1">
-        <form method="POST" action="{{ route('images.store') }}" enctype="multipart/form-data">
-            @csrf
-            <input type="hidden" name="folder_id" :value="selected || ''">
-            <input type="file" name="image" accept="image/*" class="hidden" x-ref="upload"
-                x-on:change="$el.form.requestSubmit()">
-            <x-button variant="ghost" x-on:click="$refs.upload.click()">Upload Image</x-button>
-        </form>
-        <x-button variant="ghost" commandfor="create-folder-dialog" command="show-modal"
-            x-on:click="parent = null">Create Folder</x-button>
-    </div>
+    @can('manager')
+        <div class="flex justify-end pb-1">
+            <form method="POST" action="{{ route('images.store') }}" enctype="multipart/form-data">
+                @csrf
+                <input type="hidden" name="folder_id" :value="selected || ''">
+                <input type="file" name="image" accept="image/*" class="hidden" x-ref="upload"
+                    x-on:change="$el.form.requestSubmit()">
+                <x-button variant="ghost" x-on:click="$refs.upload.click()">Upload Image</x-button>
+            </form>
+            <x-button variant="ghost" commandfor="create-folder-dialog" command="show-modal"
+                x-on:click="parent = null">Create Folder</x-button>
+        </div>
 
-    <x-folder-dialog id="create-folder-dialog" />
-    <x-image-dialog id="edit-image-dialog" :folders="$folders" />
-    <x-confirm-dialog id="remove-image-dialog" action="" x-bind:action="target && `${endpoint}/${target.id}`"
-        method="DELETE">
-        Remove image <span class="font-bold text-mauve-50" x-text="target?.name"></span>?
-    </x-confirm-dialog>
+        <x-folder-dialog id="create-folder-dialog" />
+        <x-image-dialog id="edit-image-dialog" :folders="$folders" />
+        <x-confirm-dialog id="remove-image-dialog" action="" x-bind:action="target && `${endpoint}/${target.id}`"
+            method="DELETE">
+            Remove image <span class="font-bold text-mauve-50" x-text="target?.name"></span>?
+        </x-confirm-dialog>
+    @endcan
 
     <div class="flex gap-4">
         <aside class="w-48 shrink-0">
@@ -96,15 +98,17 @@
                     <figcaption class="flex items-center gap-1 px-1 text-mauve-200 italic">
                         <a class="min-w-0 flex-1 truncate" title="{{ $image->name }}">{{ $image->name }}</a>
 
-                        <button type="button" class="cursor-pointer" title="Edit" commandfor="edit-image-dialog"
-                            command="show-modal" x-on:click="target = @js($image->only('id', 'name', 'folder_id'))">
-                            <x-lucide-pen class="size-4 shrink-0 stroke-mauve-500 hover:stroke-mauve-100" />
-                        </button>
+                        @can('manager')
+                            <button type="button" class="cursor-pointer" title="Edit" commandfor="edit-image-dialog"
+                                command="show-modal" x-on:click="target = @js($image->only('id', 'name', 'folder_id'))">
+                                <x-lucide-pen class="size-4 shrink-0 stroke-mauve-500 hover:stroke-mauve-100" />
+                            </button>
 
-                        <button type="button" class="cursor-pointer" title="Remove" commandfor="remove-image-dialog"
-                            command="show-modal" x-on:click="target = @js($image->only('id', 'name', 'folder_id'))">
-                            <x-lucide-trash class="size-4 shrink-0 stroke-mauve-500 hover:stroke-red-400" />
-                        </button>
+                            <button type="button" class="cursor-pointer" title="Remove" commandfor="remove-image-dialog"
+                                command="show-modal" x-on:click="target = @js($image->only('id', 'name', 'folder_id'))">
+                                <x-lucide-trash class="size-4 shrink-0 stroke-mauve-500 hover:stroke-red-400" />
+                            </button>
+                        @endcan
                     </figcaption>
                 </figure>
             @endforeach

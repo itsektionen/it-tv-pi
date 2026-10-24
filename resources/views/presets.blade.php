@@ -7,9 +7,11 @@
 
     <div x-data="{}">
         <div class="mb-2 flex gap-2 items-center">
-            <x-button class="ml-auto" variant="ghost" commandfor="create-dialog" command="show-modal">Create
-                Preset</x-button>
-            <x-preset-dialog id="create-dialog" :screenGroups="$screenGroups" :slideshows="$slideshows" />
+            @can('manager')
+                <x-button class="ml-auto" variant="ghost" commandfor="create-dialog" command="show-modal">Create
+                    Preset</x-button>
+                <x-preset-dialog id="create-dialog" :screenGroups="$screenGroups" :slideshows="$slideshows" />
+            @endcan
         </div>
 
         <table class="w-full">
@@ -36,19 +38,21 @@
 
                         <td class="px-2 text-mauve-200 italic">{{ $p->created_at }}</td>
                         <td class="flex justify-end">
-                            <x-button variant="ghost" commandfor="activate-dialog-{{ $p->id }}"
-                                command="show-modal">Activate</x-button>
-                            <x-confirm-dialog :id="'activate-dialog-' . $p->id" :action="route('presets.activate', $p)">
-                                Activate preset <span class="font-bold text-mauve-50">{{ $p->name }}</span>?
-                            </x-confirm-dialog>
-                            <x-button variant="ghost" commandfor="edit-dialog-{{ $p->id }}"
-                                command="show-modal">Edit</x-button>
-                            <x-preset-dialog :id="'edit-dialog-' . $p->id" :preset="$p" :screenGroups="$screenGroups" :slideshows="$slideshows" />
-                            <x-button variant="danger" commandfor="remove-dialog-{{ $p->id }}"
-                                command="show-modal">Remove</x-button>
-                            <x-confirm-dialog :id="'remove-dialog-' . $p->id" :action="route('presets.destroy', $p)" method="DELETE">
-                                Remove preset <span class="font-bold text-mauve-50">{{ $p->name }}</span>?
-                            </x-confirm-dialog>
+                            @can('manager')
+                                <x-button variant="ghost" commandfor="activate-dialog-{{ $p->id }}"
+                                    command="show-modal">Activate</x-button>
+                                <x-confirm-dialog :id="'activate-dialog-' . $p->id" :action="route('presets.activate', $p)">
+                                    Activate preset <span class="font-bold text-mauve-50">{{ $p->name }}</span>?
+                                </x-confirm-dialog>
+                                <x-button variant="ghost" commandfor="edit-dialog-{{ $p->id }}"
+                                    command="show-modal">Edit</x-button>
+                                <x-preset-dialog :id="'edit-dialog-' . $p->id" :preset="$p" :screenGroups="$screenGroups" :slideshows="$slideshows" />
+                                <x-button variant="danger" commandfor="remove-dialog-{{ $p->id }}"
+                                    command="show-modal">Remove</x-button>
+                                <x-confirm-dialog :id="'remove-dialog-' . $p->id" :action="route('presets.destroy', $p)" method="DELETE">
+                                    Remove preset <span class="font-bold text-mauve-50">{{ $p->name }}</span>?
+                                </x-confirm-dialog>
+                            @endcan
                         </td>
                     </tr>
                 @endforeach
