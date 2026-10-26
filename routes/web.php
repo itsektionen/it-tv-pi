@@ -12,8 +12,8 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [SessionController::class, 'store'])->middleware('throttle:5,1');
 });
 
-Route::get('/client/{id}', function (Request $request, $id) {
-    $validator = Validator::make(['id' => $id], ['id' => ['required', 'string', 'max:64', 'alpha_dash:ascii']]);
+Route::get('/client', function (Request $request) {
+    $validator = Validator::make($request->query(), ['id' => ['required', 'string', 'max:64', 'alpha_dash:ascii']]);
 
     if ($validator->fails()) {
         return response()->view('client', ['error' => $validator->errors()->first('id')], 400);

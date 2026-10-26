@@ -23,10 +23,7 @@
 
 <body class="h-screen cursor-none overflow-hidden bg-black text-mauve-50">
     @if ($error)
-        @php
-            dd($error);
-        @endphp
-        <div class="flex justify-center py-4"></div>
+        <div class="flex justify-center py-4">This page requires a <i class="italic">?id=</i> query parameter</div>
     @else
         <div class="relative size-full" x-data="{
             items: @js($state['items']),
