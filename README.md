@@ -2,6 +2,38 @@
 
 Version π of the ITTV system.
 
+## Dev Environment
+
+_Use WSL if on Windows_
+
+Install:
+
+- Docker
+- PNPM
+- Composer
+- PHP
+
+> [!TIP]
+> If you are running on Windows and the repo is cloned on an NTFS drive not in WSL then the project will be SLOWWWWWW. Clone it in WSL instead.
+
+```bash
+$ git clone git@github.com:itsektionen/it-tv-pi.git
+$ cd it-tv-pi
+$ composer install && pnpm install
+```
+
+Fix the .env, use an LLM here and just tell it to setup the .env using the .env.example for Laravel Sail
+
+```bash
+$ ./vendor/bin/sail up
+```
+
+and then while sail is up
+
+```bash
+$ pnpm dev
+```
+
 ## TODO
 
 - MQQT Legacy Integration
