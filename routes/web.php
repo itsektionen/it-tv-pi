@@ -13,7 +13,7 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::get('/client', function (Request $request) {
-    $validator = Validator::make($request->query(), ['id' => ['required', 'string', 'max:64', 'alpha_dash:ascii']]);
+    $validator = Validator::make($request->query(), ['id' => ['required', 'string', 'max:64']]);
 
     if ($validator->fails()) {
         return response()->view('client', ['error' => $validator->errors()->first('id')], 400);
