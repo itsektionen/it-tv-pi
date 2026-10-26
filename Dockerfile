@@ -34,7 +34,7 @@ RUN composer install --no-dev --no-interaction --no-scripts --no-autoloader --pr
 COPY --chown=www-data:www-data . .
 
 ARG VITE_REVERB_APP_KEY=it-tv-pi
-ARG VITE_REVERB_HOST=tv-dev.kth.it
+ARG VITE_REVERB_HOST=tv.kth.it
 ARG VITE_REVERB_PORT=443
 ARG VITE_REVERB_SCHEME=https
 
