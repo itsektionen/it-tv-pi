@@ -1,6 +1,6 @@
 @props(['slideshow'])
 
-<div {{ $attributes->class('flex gap-1 overflow-x-auto') }}>
+<div {{ $attributes->class('flex gap-1 overflow-x-auto flex-wrap') }}>
     @foreach ($slideshow->items->sortBy('id') as $item)
         @if ($item->type === 'image')
             <img src="{{ route('images.showPreview', $item->data['image']) }}" alt="" loading="lazy"
