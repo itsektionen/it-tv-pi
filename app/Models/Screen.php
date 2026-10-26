@@ -26,7 +26,7 @@ class Screen extends Model
             return;
         }
 
-        static::withoutTimestamps(fn() => static::whereKey(Str::after($channel, 'screen.'))
+        static::withoutTimestamps(fn() => static::whereRaw("replace(id, ':', '_') = ?", [Str::after($channel, 'screen.')])
             ->update(['active' => $active, 'last_active_at' => now()]));
     }
 
@@ -62,7 +62,7 @@ class Screen extends Model
 
     public function channel(): string
     {
-        return "screen.{$this->id}";
+        return 'screen.' . str_replace(':', '_', $this->id);
     }
 
     protected function casts(): array
