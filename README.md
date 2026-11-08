@@ -25,7 +25,9 @@ $ composer install && pnpm install
 Fix the .env, use an LLM here and just tell it to setup the .env using the .env.example for Laravel Sail
 
 ```bash
+$ php artisan key:generate
 $ ./vendor/bin/sail up
+$ ./vendor/bin/sail artisan migrate
 ```
 
 and then while sail is up
