@@ -17,10 +17,11 @@ class StoreSlideshowRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'sections' => ['required', 'array', 'min:1'],
-            'sections.*.type' => ['required', Rule::in(['image', 'clock'])],
+            'sections.*.type' => ['required', Rule::in(['image', 'clock', 'iframe'])],
             'sections.*.duration' => ['required', 'integer', 'min:1'],
             'sections.*.data' => ['nullable', 'array'],
             'sections.*.data.image' => ['exclude_unless:sections.*.type,image', 'required', 'uuid', 'exists:images,id'],
+            'sections.*.data.url' => ['exclude_unless:sections.*.type,iframe', 'required', 'url:http,https', 'max:2048'],
         ];
     }
 }

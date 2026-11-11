@@ -8,7 +8,7 @@
                 fn($item) => [
                     'type' => $item->type,
                     'duration' => $item->duration,
-                    'data' => ['image' => $item->data['image'] ?? null],
+                    'data' => ['image' => $item->data['image'] ?? null, 'url' => $item->data['url'] ?? null],
                 ],
             )
             ->values()
@@ -82,7 +82,12 @@
                             <x-select x-model="section.type">
                                 <x-option value="image">Image</x-option>
                                 <x-option value="clock">Clock</x-option>
+                                <x-option value="iframe">Website (iframe)</x-option>
                             </x-select>
+                        </dd>
+                        <dt x-show="section.type == 'iframe'" class="text-mauve-400">URL</dt>
+                        <dd x-show="section.type == 'iframe'">
+                            <x-input x-model="section.data.url" type="url" placeholder="https://" />
                         </dd>
                         <dt x-show="section.type == 'image'" class="text-mauve-400">Image</dt>
                         <dd x-show="section.type == 'image'" class="space-y-1">
@@ -103,7 +108,7 @@
 
         <div class="flex justify-end gap-2">
             <x-button variant="outline" class="mr-auto"
-                x-on:click="sections.push({ type: 'image', duration: 5, data: { image: null }})">Add Section</x-button>
+                x-on:click="sections.push({ type: 'image', duration: 5, data: { image: null, url: null }})">Add Section</x-button>
 
             <x-button variant="ghost" commandfor="{{ $id }}" command="close">Cancel</x-button>
             <x-button x-on:click="save()">{{ $slideshow ? 'Save' : 'Create' }}</x-button>
