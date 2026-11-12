@@ -3,9 +3,12 @@
 namespace App\Providers;
 
 use App\Enums\Permission;
+use App\Models\ApiKey;
 use App\Models\Screen;
 use App\Models\User;
 use Illuminate\Console\Events\CommandStarting;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -35,8 +38,15 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
+        Auth::viaRequest('api-key', function (Request $request) {
+            $apiKey = ApiKey::findByToken($request->bearerToken());
+            $apiKey?->increment('times_used', 1, ['last_used' => now()]);
+
+            return $apiKey;
+        });
+
         foreach (Permission::cases() as $permission) {
-            Gate::define($permission->value, fn(User $user) => $user->permission->includes($permission));
+            Gate::define($permission->value, fn(User|ApiKey $user) => $user->permission->includes($permission));
         }
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ApiKeyController;
 use App\Http\Controllers\Api\FolderController;
 use App\Http\Controllers\Api\ImageController;
 use App\Http\Controllers\Api\ScreenController;
@@ -13,7 +14,7 @@ Route::prefix("v1")->group(function () {
     Route::apiResource("images", ImageController::class)->only("show");
     Route::get("images/preview/{image}", [ImageController::class, "showPreview"])->name("images.showPreview");
 
-    Route::middleware(["auth:sanctum", "can:manager"])->group(function () {
+    Route::middleware(["auth:sanctum,api-key", "can:manager"])->group(function () {
         Route::apiResource("images", ImageController::class)->only("store");
         Route::apiResource("folders", FolderController::class)->only("store");
         Route::apiResource("slideshows", SlideshowController::class)->only(["store", "update"]);
@@ -24,7 +25,7 @@ Route::prefix("v1")->group(function () {
         Route::post("presets/{preset}/activate", [PresetController::class, "activate"])->name("presets.activate");
     });
 
-    Route::middleware(["auth:sanctum", "can:admin"])->group(function () {
+    Route::middleware(["auth:sanctum,api-key", "can:admin"])->group(function () {
         Route::apiResource("images", ImageController::class)->only(["update", "destroy"]);
         Route::apiResource("folders", FolderController::class)->only("destroy");
         Route::apiResource("slideshows", SlideshowController::class)->only("destroy");
@@ -32,5 +33,6 @@ Route::prefix("v1")->group(function () {
         Route::apiResource("screen-groups", ScreenGroupController::class)->only(["update", "destroy"]);
         Route::apiResource("presets", PresetController::class)->only(["update", "destroy"]);
         Route::apiResource("users", UserController::class)->only(["store", "update", "destroy"]);
+        Route::apiResource("api-keys", ApiKeyController::class)->only(["store", "destroy"]);
     });
 });

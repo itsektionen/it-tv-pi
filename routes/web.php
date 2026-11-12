@@ -35,5 +35,8 @@ Route::middleware('auth')->group(function () {
         Route::view('/images', 'images')->name('images');
     });
 
-    Route::view('/users', 'users')->middleware('can:admin')->name('users');
+    Route::middleware('can:admin')->group(function () {
+        Route::view('/users', 'users')->name('users');
+        Route::view('/api-keys', 'api-keys')->name('api-keys');
+    });
 });
