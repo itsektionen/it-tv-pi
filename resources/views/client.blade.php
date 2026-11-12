@@ -39,27 +39,27 @@
                             this.items = state.items;
                             this.startedAt = state.startedAt;
                         }); @endif
-        
+
                 this.tick();
                 setInterval(() => this.tick(), 100);
             },
             tick() {
                 const time = Date.now() + this.offset;
                 const total = this.items.reduce((sum, item) => sum + item.duration * 1000, 0);
-        
+
                 this.now = new Date(time);
-        
+
                 if (!total) {
                     return;
                 }
-        
+
                 let elapsed = ((time - this.startedAt) % total + total) % total;
-        
+
                 this.current = this.items.findIndex((item) => (elapsed -= item.duration * 1000) < 0);
             },
             shown(index) {
                 const count = this.items.length;
-        
+
                 return [-1, 0].some((step) => ((this.current + step) % count + count) % count === index);
             },
             upcoming(index) {
@@ -74,8 +74,21 @@
                     </template>
                     <template x-if="shown(index)">
                         <div class="contents">
-                            <template x-if="item.type === 'image'">
+                            <template x-if="item.type === 'image' && !item.caption">
                                 <img :src="item.image" class="size-full object-contain">
+                            </template>
+                            <template x-if="item.type === 'image' && item.caption">
+                                <div class="grid size-full grid-cols-1 bg-black p-[5vh]"
+                                    :class="item.captionPosition === 'above' ? 'grid-rows-[auto_minmax(0,1fr)]' : 'grid-rows-[minmax(0,1fr)_auto]'">
+                                    <div class="flex items-center justify-center [container-type:size]">
+                                        <img :src="item.image"
+                                            x-on:load="$el.style.setProperty('--ratio', $el.naturalWidth / $el.naturalHeight)"
+                                            class="box-content border-[0.4vh] border-white p-[0.8vh] w-[min(100cqw-2.4vh,(100cqh-2.4vh)*var(--ratio,1))]">
+                                    </div>
+                                    <p class="text-center font-serif text-[6vh] leading-tight text-white"
+                                        :class="item.captionPosition === 'above' ? 'order-first pb-[3vh]' : 'pt-[3vh]'"
+                                        x-text="item.caption"></p>
+                                </div>
                             </template>
                             <template x-if="item.type === 'clock'">
                                 <div class="w-fit flex items-center flex-col">

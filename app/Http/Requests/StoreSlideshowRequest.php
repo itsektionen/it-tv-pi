@@ -21,6 +21,8 @@ class StoreSlideshowRequest extends FormRequest
             'sections.*.duration' => ['required', 'integer', 'min:1'],
             'sections.*.data' => ['nullable', 'array'],
             'sections.*.data.image' => ['exclude_unless:sections.*.type,image', 'required', 'uuid', 'exists:images,id'],
+            'sections.*.data.caption' => ['exclude_unless:sections.*.type,image', 'nullable', 'string', 'max:255'],
+            'sections.*.data.caption_position' => ['exclude_unless:sections.*.type,image', 'nullable', Rule::in(['above', 'below'])],
         ];
     }
 }
