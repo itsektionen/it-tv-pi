@@ -21,6 +21,24 @@
     endpoint: @js(route('images.store')),
     folders: @js($folders->keyBy('id')->map->only('name', 'parent_id')),
     imageFolders: @js($images->pluck('folder_id')),
+    uploading: false,
+    uploadError: null,
+    async upload(form) {
+        this.uploading = true;
+        this.uploadError = null;
+        try {
+            const { ok, data } = await sendJson(this.endpoint, { body: new FormData(form) });
+            if (ok) {
+                form.reset();
+                Alpine.evaluate(form, @js($onImageClick), { scope: { image: data.id } });
+            } else {
+                this.uploadError = data.message;
+            }
+        } catch {
+            this.uploadError = 'Could not upload the image.';
+        }
+        this.uploading = false;
+    },
     init() {
         this.$watch('selected', () => this.syncQuery());
     },
@@ -48,7 +66,8 @@
 }">
     @can('manager')
         <div class="flex justify-end pb-1">
-            <form method="POST" action="{{ route('images.store') }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ route('images.store') }}" enctype="multipart/form-data"
+                @if ($onImageClick) x-on:submit.prevent="upload($el)" @endif>
                 @csrf
                 <input type="hidden" name="folder_id" :value="selected || ''">
                 <input type="file" name="image" accept="image/*" class="hidden" x-ref="upload"
@@ -58,6 +77,7 @@
             <x-button variant="ghost" commandfor="create-folder-dialog" command="show-modal"
                 x-on:click="parent = null">Create Folder</x-button>
         </div>
+        <p x-show="uploadError" x-text="uploadError" class="pb-1 text-right text-red-400"></p>
 
         <x-folder-dialog id="create-folder-dialog" />
     @endcan

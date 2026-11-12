@@ -12,18 +12,14 @@
             this.saving = true;
 
             try {
-                const response = await fetch(@js(route('api-keys.store')), {
-                    method: 'POST',
-                    headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': @js(csrf_token()) },
-                    body: JSON.stringify({ name: this.name, permission: this.permission }),
+                const { ok, data } = await sendJson(@js(route('api-keys.store')), {
+                    body: { name: this.name, permission: this.permission },
                 });
-
-                if (response.ok) {
-                    this.token = (await response.json()).token;
+                if (ok) {
+                    this.token = data.token;
                     return;
                 }
-
-                this.error = (await response.json()).message;
+                this.error = data.message;
             } catch {
                 this.error = 'Could not create the API key.';
             }
