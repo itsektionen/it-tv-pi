@@ -33,6 +33,8 @@
             startedAt: @js($state['startedAt']),
             offset: @js(now()->getTimestampMs()) - Date.now(),
             current: 0,
+            visits: {},
+            loaded: {},
             now: new Date(),
             init() {
                 @if ($screen) window.Echo.channel(@js($screen->channel())).listen('ActiveSlideshowChanged', (state) => {
@@ -55,7 +57,24 @@
 
                 let elapsed = ((time - this.startedAt) % total + total) % total;
 
-                this.current = this.items.findIndex((item) => (elapsed -= item.duration * 1000) < 0);
+                const index = this.items.findIndex((item) => (elapsed -= item.duration * 1000) < 0);
+                if (index !== this.current) {
+                    this.current = index;
+                    if (!this.isKept(index)) {
+                        this.visits[index] = (this.visits[index] ?? 0) + 1;
+                    }
+                    this.loaded = Object.fromEntries(
+                        Object.entries(this.loaded).filter(([i]) => this.isKept(+i) || (+i !== index && this.shown(+i))),
+                    );
+                }
+            },
+            isKept(index) {
+                return this.items[index]?.reload === false;
+            },
+            get displayed() {
+                const count = this.items.length;
+                const ready = this.items[this.current]?.type !== 'iframe' || this.loaded[this.current];
+                return ready ? this.current : (this.current - 1 + count) % count;
             },
             shown(index) {
                 const count = this.items.length;
@@ -68,11 +87,11 @@
         }">
             <template x-for="(item, index) in items">
                 <div class="absolute inset-0 flex items-center justify-center transition-opacity duration-1000"
-                    :class="current === index ? 'opacity-100' : 'opacity-0'">
+                    :class="displayed === index ? 'opacity-100' : 'opacity-0'">
                     <template x-if="item.type === 'image' && upcoming(index)">
                         <link rel="preload" as="image" :href="item.image">
                     </template>
-                    <template x-if="shown(index)">
+                    <template x-if="shown(index) || (isKept(index) && loaded[index])">
                         <div class="contents">
                             <template x-if="item.type === 'image' && !item.caption">
                                 <img :src="item.image" class="size-full object-contain">
@@ -89,6 +108,17 @@
                                         :class="item.captionPosition === 'above' ? 'order-first pb-[3vh]' : 'pt-[3vh]'"
                                         x-text="item.caption"></p>
                                 </div>
+                            </template>
+                            <template x-if="item.type === 'iframe' && /^https?:/i.test(item.url) && (index === current || loaded[index])">
+                                {{-- Key on visit count makes it refresh every time, unless set to keep --}}
+                                <template x-for="key in [visits[index] ?? 0]" :key="key">
+                                    <iframe :src="item.url" @load="loaded[index] = true"
+                                        sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
+                                        referrerpolicy="strict-origin-when-cross-origin"
+                                        allow="autoplay; fullscreen"
+                                        scrolling="no"
+                                        class="pointer-events-none size-full border-0 bg-black"></iframe>
+                                </template>
                             </template>
                             <template x-if="item.type === 'clock'">
                                 <div class="w-fit flex items-center flex-col">

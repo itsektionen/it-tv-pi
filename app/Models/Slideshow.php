@@ -16,6 +16,7 @@ class Slideshow extends Model
             'duration' => $item->duration,
             'image' => $item->type === 'image' ? route('images.show', $item->data['image'], false) : null,
             'url' => data_get($item->data, 'url'),
+            'reload' => data_get($item->data, 'reload', true),
         ])->values()->all();
     }
 

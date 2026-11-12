@@ -8,7 +8,7 @@
                 fn($item) => [
                     'type' => $item->type,
                     'duration' => $item->duration,
-                    'data' => ['image' => $item->data['image'] ?? null, 'url' => $item->data['url'] ?? null],
+                    'data' => ['image' => $item->data['image'] ?? null, 'url' => $item->data['url'] ?? null, 'reload' => $item->data['reload'] ?? true],
                 ],
             )
             ->values()
@@ -89,6 +89,14 @@
                         <dd x-show="section.type == 'iframe'">
                             <x-input x-model="section.data.url" type="url" placeholder="https://" />
                         </dd>
+                        <dt x-show="section.type == 'iframe'" class="text-mauve-400">Reload</dt>
+                        <dd x-show="section.type == 'iframe'">
+                            <label class="flex cursor-pointer select-none items-center gap-2 py-0.5"
+                                title="Load a fresh copy of the page each time the slide comes up. Turn off to keep it running in the background (e.g. a video), which also keeps any audio playing.">
+                                <input type="checkbox" x-model="section.data.reload" class="accent-mauve-500">
+                                Reload each time
+                            </label>
+                        </dd>
                         <dt x-show="section.type == 'image'" class="text-mauve-400">Image</dt>
                         <dd x-show="section.type == 'image'" class="space-y-1">
                             <x-button variant="outline" class="w-full"
@@ -108,7 +116,7 @@
 
         <div class="flex justify-end gap-2">
             <x-button variant="outline" class="mr-auto"
-                x-on:click="sections.push({ type: 'image', duration: 5, data: { image: null, url: null }})">Add Section</x-button>
+                x-on:click="sections.push({ type: 'image', duration: 5, data: { image: null, url: null, reload: true }})">Add Section</x-button>
 
             <x-button variant="ghost" commandfor="{{ $id }}" command="close">Cancel</x-button>
             <x-button x-on:click="save()">{{ $slideshow ? 'Save' : 'Create' }}</x-button>

@@ -22,6 +22,7 @@ class StoreSlideshowRequest extends FormRequest
             'sections.*.data' => ['nullable', 'array'],
             'sections.*.data.image' => ['exclude_unless:sections.*.type,image', 'required', 'uuid', 'exists:images,id'],
             'sections.*.data.url' => ['exclude_unless:sections.*.type,iframe', 'required', 'url:http,https', 'max:2048'],
+            'sections.*.data.reload' => ['exclude_unless:sections.*.type,iframe', 'boolean'],
         ];
     }
 }
