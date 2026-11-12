@@ -12,6 +12,8 @@
                         'image' => $item->data['image'] ?? null,
                         'caption' => $item->data['caption'] ?? null,
                         'caption_position' => $item->data['caption_position'] ?? 'below',
+                        'url' => $item->data['url'] ?? null,
+                        'reload' => $item->data['reload'] ?? false,
                     ],
                 ],
             )
@@ -90,7 +92,20 @@
                             <x-select x-model="section.type">
                                 <x-option value="image">Image</x-option>
                                 <x-option value="clock">Clock</x-option>
+                                <x-option value="iframe">Website (iframe)</x-option>
                             </x-select>
+                        </dd>
+                        <dt x-show="section.type == 'iframe'" class="text-mauve-400">URL</dt>
+                        <dd x-show="section.type == 'iframe'">
+                            <x-input x-model="section.data.url" type="url" placeholder="https://" />
+                        </dd>
+                        <dt x-show="section.type == 'iframe'" class="text-mauve-400">Reload</dt>
+                        <dd x-show="section.type == 'iframe'">
+                            <label class="flex cursor-pointer select-none items-center gap-2 py-0.5"
+                                title="Load a fresh copy of the page each time the slide comes up. Turned off, it stays in the background.">
+                                <input type="checkbox" x-model="section.data.reload" class="accent-mauve-500">
+                                Reload each time
+                            </label>
                         </dd>
                         <dt x-show="section.type == 'image'" class="text-mauve-400">Image</dt>
                         <dd x-show="section.type == 'image'" class="space-y-1">
@@ -121,7 +136,7 @@
 
         <div class="flex justify-end gap-2">
             <x-button variant="outline" class="mr-auto"
-                x-on:click="sections.push({ type: 'image', duration: 5, data: { image: null, caption: null, caption_position: 'below' }})">Add Section</x-button>
+                x-on:click="sections.push({ type: 'image', duration: 5, data: { image: null, caption: null, caption_position: 'below', url: null, reload: false }})">Add Section</x-button>
 
             <x-button variant="ghost" commandfor="{{ $id }}" command="close">Cancel</x-button>
             <x-button x-on:click="save()" ::disabled="saving"

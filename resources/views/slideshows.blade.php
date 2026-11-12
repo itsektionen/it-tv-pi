@@ -54,8 +54,7 @@
                             <div id="preview-{{ $s->id }}" popover
                                 class="inset-auto m-0 mt-1 border border-mauve-700 bg-black p-0"
                                 style="position-anchor: --preview-{{ $s->id }}; position-area: bottom span-left;">
-                                <iframe src="{{ route('preview', $s) }}" loading="lazy"
-                                    class="block aspect-video w-120"></iframe>
+                                <x-screen-preview :src="route('preview', $s)" class="w-120" />
                             </div>
                             {{-- TODO: Investigate the same here --..-- --}}
                             @can('manager')
@@ -98,8 +97,8 @@
                                 popovertarget="card-preview-{{ $s->id }}">Preview</x-button>
                             <div id="card-preview-{{ $s->id }}" popover
                                 class="m-auto border border-mauve-700 bg-black p-0 backdrop:bg-black/60">
-                                <iframe src="{{ route('preview', $s) }}" loading="lazy"
-                                    class="block aspect-video w-[min(30rem,calc(100vw-2rem))]"></iframe>
+                                <x-screen-preview :src="route('preview', $s)"
+                                    class="w-[min(30rem,calc(100vw-2rem))]" />
                             </div>
                             @can('manager')
                                 <x-button variant="ghost" commandfor="edit-dialog-{{ $s->id }}"
