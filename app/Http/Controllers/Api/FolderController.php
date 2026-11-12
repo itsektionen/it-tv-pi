@@ -27,7 +27,7 @@ class FolderController extends Controller
     {
         DB::transaction(function () use ($folder) {
             $folder->children()->update(['parent_id' => $folder->parent_id]);
-            $folder->images()->update(['folder_id' => null]);
+            $folder->media()->update(['folder_id' => null]);
             $folder->delete();
         });
 

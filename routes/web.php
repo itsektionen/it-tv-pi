@@ -32,7 +32,7 @@ Route::middleware('auth')->group(function () {
         Route::view('/', 'slideshows')->name('slideshows');
         Route::view('/screens', 'screens')->name('screens');
         Route::view('/presets', 'presets')->name('presets');
-        Route::view('/images', 'images')->name('images');
+        Route::view('/media', 'media')->name('media');
     });
 
     Route::middleware('can:admin')->group(function () {

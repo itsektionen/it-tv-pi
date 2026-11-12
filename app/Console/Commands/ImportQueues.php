@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Folder;
-use App\Models\Image;
+use App\Models\Media;
 use App\Models\Slideshow;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
@@ -38,7 +38,7 @@ class ImportQueues extends Command
                 $duration = min(max(1, (int) round($entry['config']['timeout'] / 1000)), 2147483647);
 
                 if ($entry['type'] === 'clock') {
-                    $items[] = ['type' => 'clock', 'duration' => $duration, 'data' => ['image' => null]];
+                    $items[] = ['type' => 'clock', 'duration' => $duration, 'data' => ['media' => null]];
 
                     continue;
                 }
@@ -88,7 +88,7 @@ class ImportQueues extends Command
                     }
                 }
 
-                $items[] = ['type' => 'image', 'duration' => $duration, 'data' => ['image' => $image->id]];
+                $items[] = ['type' => 'media', 'duration' => $duration, 'data' => ['media' => $image->id]];
             }
 
             Slideshow::create(['name' => $name])->items()->createMany($items);
@@ -99,7 +99,7 @@ class ImportQueues extends Command
         DB::commit();
     }
 
-    private function findImage(string $url): ?Image
+    private function findImage(string $url): ?Media
     {
         $parts = explode('/', trim(Str::after($url, 'album/'), '/'));
         $name = array_pop($parts);
@@ -113,6 +113,6 @@ class ImportQueues extends Command
             }
         }
 
-        return Image::where('folder_id', $folderId)->where('name', $name)->first();
+        return Media::where('folder_id', $folderId)->where('name', $name)->first();
     }
 }

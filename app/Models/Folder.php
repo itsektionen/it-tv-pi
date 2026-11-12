@@ -20,8 +20,8 @@ class Folder extends Model
         return $this->hasMany(Folder::class, 'parent_id');
     }
 
-    public function images(): HasMany
+    public function media(): HasMany
     {
-        return $this->hasMany(Image::class);
+        return $this->hasMany(Media::class);
     }
 }

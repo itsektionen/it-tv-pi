@@ -2,8 +2,8 @@
 
 <div {{ $attributes->class('flex gap-1 overflow-x-auto flex-wrap') }}>
     @foreach ($slideshow->items->sortBy('id') as $item)
-        @if ($item->type === 'image')
-            <img src="{{ route('images.showPreview', $item->data['image']) }}" alt="" loading="lazy"
+        @if ($item->type === 'media')
+            <img src="{{ route('media.showPreview', $item->data['media']) }}" alt="" loading="lazy"
                 class="aspect-video w-40 shrink-0 border border-mauve-700 bg-black object-contain">
         @else
             <div

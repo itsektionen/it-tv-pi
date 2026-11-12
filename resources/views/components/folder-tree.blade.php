@@ -24,7 +24,7 @@
             @can('admin')
                 <x-confirm-dialog :id="'remove-folder-dialog-' . $folder->id" :action="route('folders.destroy', $folder)" method="DELETE">
                     Remove folder <span class="font-bold text-mauve-50">{{ $folder->name }}</span>? Its subfolders move up
-                    one level and its images become uncategorized.
+                    one level and its media become uncategorized.
                 </x-confirm-dialog>
             @endcan
             @if ($folders->has($folder->id))

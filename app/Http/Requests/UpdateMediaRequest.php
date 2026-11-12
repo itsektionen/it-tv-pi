@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateImageRequest extends FormRequest
+class UpdateMediaRequest extends FormRequest
 {
     public function authorize(): bool
     {

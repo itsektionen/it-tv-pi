@@ -7,7 +7,7 @@
             'slideshows' => ['label' => 'slideshows', 'can' => 'viewer'],
             'screens' => ['label' => 'screens', 'can' => 'viewer'],
             'presets' => ['label' => 'presets', 'can' => 'viewer'],
-            'images' => ['label' => 'images', 'can' => 'viewer'],
+            'media' => ['label' => 'media', 'can' => 'viewer'],
             'users' => ['label' => 'users', 'can' => 'admin'],
             'api-keys' => ['label' => 'api keys', 'can' => 'admin'],
         ],

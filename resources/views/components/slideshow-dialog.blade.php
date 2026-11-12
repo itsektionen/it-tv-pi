@@ -1,6 +1,12 @@
 @props(['id', 'slideshow' => null])
 
 @php
+    $videoLengths = $slideshow
+        ? \App\Models\Media::where('type', 'video')
+            ->whereIn('id', $slideshow->items->pluck('data.media')->filter())
+            ->pluck('duration', 'id')
+        : collect();
+
     $sections = $slideshow
         ? $slideshow->items
             ->sortBy('id')
@@ -8,8 +14,9 @@
                 fn($item) => [
                     'type' => $item->type,
                     'duration' => $item->duration,
+                    'videoLength' => $videoLengths->get($item->data['media'] ?? ''),
                     'data' => [
-                        'image' => $item->data['image'] ?? null,
+                        'media' => $item->data['media'] ?? null,
                         'caption' => $item->data['caption'] ?? null,
                         'caption_position' => $item->data['caption_position'] ?? 'below',
                         'url' => $item->data['url'] ?? null,
@@ -28,31 +35,39 @@
         error: null,
         saving: false,
         sections: @js($sections),
-        endpoint: '{{ route('images.store') }}',
+        endpoint: @js(route('media.store')),
         move(index, offset) {
             this.sections.splice(index + offset, 0, ...this.sections.splice(index, 1));
+        },
+        pick(section, media) {
+            section.data.media = media.id;
+            section.videoLength = media.type === 'video' ? media.duration : null;
+    
+            if (!section.videoLength && section.duration === null) {
+                section.duration = 5;
+            }
         },
         async save() {
             this.error = null;
             this.saving = true;
-
+    
             try {
                 const response = await fetch(@js($slideshow ? route('slideshows.update', $slideshow) : route('slideshows.store')), {
                     method: @js($slideshow ? 'PUT' : 'POST'),
                     headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': @js(csrf_token()) },
-                    body: JSON.stringify({ name: this.name, sections: this.sections }),
+                    body: JSON.stringify({ name: this.name, sections: this.sections.map(({ videoLength, ...section }) => section) }),
                 });
-
+    
                 if (response.ok) {
                     window.location.reload();
                     return;
                 }
-
+    
                 this.error = (await response.json()).message;
             } catch {
                 this.error = 'Could not save the slideshow.';
             }
-
+    
             this.saving = false;
         },
     }">
@@ -86,11 +101,23 @@
                                 x-on:click="sections.splice(index, 1)">Remove</button>
                         </dt>
                         <dt class="text-mauve-400">Duration (s)</dt>
-                        <dd><x-input x-model="section.duration" type="number" /></dd>
+                        <dd x-show="section.duration !== null" class="flex gap-1">
+                            <x-input x-model="section.duration" type="number" />
+                            <x-button variant="outline" class="shrink-0"
+                                x-show="section.type == 'media' && section.videoLength"
+                                x-on:click="section.duration = null">Run for video length</x-button>
+                        </dd>
+                        <dd x-show="section.duration === null" class="flex items-center gap-1">
+                            <span class="flex-1">Video length (<span
+                                    x-text="Math.round(section.videoLength)"></span>s)</span>
+                            <x-button variant="outline" class="shrink-0" x-on:click="section.duration = 5">Use
+                                timer</x-button>
+                        </dd>
                         <dt class="text-mauve-400">Type</dt>
                         <dd>
-                            <x-select x-model="section.type">
-                                <x-option value="image">Image</x-option>
+                            <x-select x-model="section.type"
+                                x-on:change="section.type != 'media' && (section.duration ??= 5)">
+                                <x-option value="media">Media</x-option>
                                 <x-option value="clock">Clock</x-option>
                                 <x-option value="iframe">Website (iframe)</x-option>
                             </x-select>
@@ -107,24 +134,25 @@
                                 Reload each time
                             </label>
                         </dd>
-                        <dt x-show="section.type == 'image'" class="text-mauve-400">Image</dt>
-                        <dd x-show="section.type == 'image'" class="space-y-1">
+                        <dt x-show="section.type == 'media'" class="text-mauve-400">Media</dt>
+                        <dd x-show="section.type == 'media'" class="space-y-1">
                             <x-button variant="outline" class="w-full"
-                                x-on:click="$dispatch('pick-image', (image) => section.data.image = image)">Select
-                                image</x-button>
-                            <template x-if="section.data.image">
-                                <img :src="`${endpoint}/preview/${section.data.image}`" loading="lazy"
+                                x-on:click="$dispatch('pick-media', (media) => pick(section, media))">Select
+                                media</x-button>
+                            <template x-if="section.data.media">
+                                <img :src="`${endpoint}/preview/${section.data.media}`" loading="lazy"
                                     class="max-h-40 border border-mauve-700">
                             </template>
                         </dd>
-                        <dt x-show="section.type == 'image'" class="text-mauve-400">Caption</dt>
-                        <dd x-show="section.type == 'image'"><x-input x-model="section.data.caption"
+                        <dt x-show="section.type == 'media'" class="text-mauve-400">Caption</dt>
+                        <dd x-show="section.type == 'media'"><x-input x-model="section.data.caption"
                                 placeholder="Optional" maxlength="255" /></dd>
-                        <dt x-show="section.type == 'image' && section.data.caption" class="text-mauve-400">Caption position</dt>
-                        <dd x-show="section.type == 'image' && section.data.caption">
+                        <dt x-show="section.type == 'media' && section.data.caption" class="text-mauve-400">Caption
+                            position</dt>
+                        <dd x-show="section.type == 'media' && section.data.caption">
                             <x-select x-model="section.data.caption_position">
-                                <x-option value="below">Below image</x-option>
-                                <x-option value="above">Above image</x-option>
+                                <x-option value="below">Below media</x-option>
+                                <x-option value="above">Above media</x-option>
                             </x-select>
                         </dd>
                     </div>
@@ -136,7 +164,8 @@
 
         <div class="flex justify-end gap-2">
             <x-button variant="outline" class="mr-auto"
-                x-on:click="sections.push({ type: 'image', duration: 5, data: { image: null, caption: null, caption_position: 'below', url: null, reload: false }})">Add Section</x-button>
+                x-on:click="sections.push({ type: 'media', duration: 5, videoLength: null, data: { media: null, caption: null, caption_position: 'below', url: null, reload: false }})">Add
+                Section</x-button>
 
             <x-button variant="ghost" commandfor="{{ $id }}" command="close">Cancel</x-button>
             <x-button x-on:click="save()" ::disabled="saving"

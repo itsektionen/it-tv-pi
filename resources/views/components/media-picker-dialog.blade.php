@@ -10,19 +10,19 @@
             this.select = select;
             document.getElementById(@js($id)).showModal();
         },
-        pick(image) {
-            this.select(image);
+        pick(media) {
+            this.select(media);
             document.getElementById(@js($id)).close();
         },
     }"
-    x-on:pick-image.window="open($event.detail)"
+    x-on:pick-media.window="open($event.detail)"
 >
     <div class="space-y-3">
         <div class="flex justify-between">
-            <h2 class="text-lg font-bold text-mauve-50">Select an image</h2>
+            <h2 class="text-lg font-bold text-mauve-50">Select media</h2>
             <x-button variant="ghost" commandfor="{{ $id }}" command="close" class="text-mauve-500">Close</x-button>
         </div>
 
-        <x-image-library on-image-click="pick(image)" />
+        <x-media-library on-media-click="pick(item)" />
     </div>
 </dialog>

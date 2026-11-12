@@ -36,27 +36,30 @@
             visits: {},
             loaded: {},
             now: new Date(),
+            frame: 'box-content border-[0.4vh] border-white p-[0.8vh] w-[min(100cqw-2.4vh,(100cqh-2.4vh)*var(--ratio,1))]',
             init() {
                 @if ($screen) window.Echo.channel(@js($screen->channel())).listen('ActiveSlideshowChanged', (state) => {
                             this.items = state.items;
                             this.startedAt = state.startedAt;
                         }); @endif
-
+        
                 this.tick();
                 setInterval(() => this.tick(), 100);
             },
-            tick() {
-                const time = Date.now() + this.offset;
+            elapsed() {
                 const total = this.items.reduce((sum, item) => sum + item.duration * 1000, 0);
-
-                this.now = new Date(time);
-
-                if (!total) {
+        
+                return total ? ((Date.now() + this.offset - this.startedAt) % total + total) % total : null;
+            },
+            tick() {
+                let elapsed = this.elapsed();
+        
+                this.now = new Date(Date.now() + this.offset);
+        
+                if (elapsed === null) {
                     return;
                 }
-
-                let elapsed = ((time - this.startedAt) % total + total) % total;
-
+        
                 const index = this.items.findIndex((item) => (elapsed -= item.duration * 1000) < 0);
                 if (index !== this.current) {
                     this.current = index;
@@ -76,9 +79,16 @@
                 const ready = this.items[this.current]?.type !== 'iframe' || this.loaded[this.current];
                 return ready ? this.current : (this.current - 1 + count) % count;
             },
+            play(video, index) {
+                const position = this.items.slice(0, index).reduce((elapsed, item) => elapsed - item.duration * 1000, this.elapsed());
+        
+                video.muted = true;
+                video.currentTime = position > 1000 ? position / 1000 : 0;
+                video.play().catch(() => {});
+            },
             shown(index) {
                 const count = this.items.length;
-
+        
                 return [-1, 0].some((step) => ((this.current + step) % count + count) % count === index);
             },
             upcoming(index) {
@@ -88,36 +98,44 @@
             <template x-for="(item, index) in items">
                 <div class="absolute inset-0 flex items-center justify-center transition-opacity duration-1000"
                     :class="displayed === index ? 'opacity-100' : 'opacity-0'">
-                    <template x-if="item.type === 'image' && upcoming(index)">
-                        <link rel="preload" as="image" :href="item.image">
+                    <template x-if="item.type === 'media' && !item.video && upcoming(index)">
+                        <link rel="preload" as="image" :href="item.src">
                     </template>
                     <template x-if="shown(index) || (isKept(index) && loaded[index])">
                         <div class="contents">
-                            <template x-if="item.type === 'image' && !item.caption">
-                                <img :src="item.image" class="size-full object-contain">
-                            </template>
-                            <template x-if="item.type === 'image' && item.caption">
-                                <div class="grid size-full grid-cols-1 bg-black p-[5vh]"
-                                    :class="item.captionPosition === 'above' ? 'grid-rows-[auto_minmax(0,1fr)]' : 'grid-rows-[minmax(0,1fr)_auto]'">
+                            <template x-if="item.type === 'media'">
+                                <div class="grid size-full grid-cols-1"
+                                    :class="!item.caption ? 'grid-rows-1' : item.captionPosition === 'above' ?
+                                        'grid-rows-[auto_minmax(0,1fr)] p-[5vh]' :
+                                        'grid-rows-[minmax(0,1fr)_auto] p-[5vh]'">
                                     <div class="flex items-center justify-center [container-type:size]">
-                                        <img :src="item.image"
-                                            x-on:load="$el.style.setProperty('--ratio', $el.naturalWidth / $el.naturalHeight)"
-                                            class="box-content border-[0.4vh] border-white p-[0.8vh] w-[min(100cqw-2.4vh,(100cqh-2.4vh)*var(--ratio,1))]">
+                                        <template x-if="!item.video">
+                                            <img :src="item.src"
+                                                x-on:load="$el.style.setProperty('--ratio', $el.naturalWidth / $el.naturalHeight)"
+                                                :class="item.caption ? frame : 'size-full object-contain'">
+                                        </template>
+                                        <template x-if="item.video">
+                                            <video :src="item.src" muted playsinline preload="auto"
+                                                :loop="item.loop || items.length === 1"
+                                                x-on:loadedmetadata="$el.style.setProperty('--ratio', $el.videoWidth / $el.videoHeight)"
+                                                x-effect="current === index && play($el, index)"
+                                                :class="item.caption ? frame : 'size-full object-contain'"></video>
+                                        </template>
                                     </div>
-                                    <p class="text-center font-serif text-[6vh] leading-tight text-white"
+                                    <p x-show="item.caption"
+                                        class="text-center font-serif text-[6vh] leading-tight text-white"
                                         :class="item.captionPosition === 'above' ? 'order-first pb-[3vh]' : 'pt-[3vh]'"
                                         x-text="item.caption"></p>
                                 </div>
                             </template>
-                            <template x-if="item.type === 'iframe' && /^https?:/i.test(item.url) && (index === current || loaded[index])">
+                            <template
+                                x-if="item.type === 'iframe' && /^https?:/i.test(item.url) && (index === current || loaded[index])">
                                 {{-- Key on visit count makes it refresh every time, unless set to keep --}}
                                 <template x-for="key in [visits[index] ?? 0]" :key="key">
                                     <iframe :src="item.url" @load="loaded[index] = true"
                                         sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
-                                        referrerpolicy="strict-origin-when-cross-origin"
-                                        allow="autoplay; fullscreen"
-                                        scrolling="no"
-                                        class="pointer-events-none size-full border-0 bg-black"></iframe>
+                                        referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; fullscreen"
+                                        scrolling="no" class="pointer-events-none size-full border-0 bg-black"></iframe>
                                 </template>
                             </template>
                             <template x-if="item.type === 'clock'">

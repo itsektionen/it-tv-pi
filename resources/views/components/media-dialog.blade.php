@@ -6,7 +6,7 @@
         @csrf
         @method('PUT')
 
-        <h2 class="text-lg font-bold text-mauve-50">Edit image</h2>
+        <h2 class="text-lg font-bold text-mauve-50">Edit media</h2>
         <dl class="grid grid-cols-[100px_1fr] items-center gap-y-1">
             <dt class="text-mauve-400">Name</dt>
             <dd><x-input name="name" x-bind:value="target?.name" required maxlength="255" /></dd>

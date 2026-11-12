@@ -11,15 +11,23 @@ class Slideshow extends Model
 {
     public function clientItems(): array
     {
-        return $this->items->sortBy('id')->map(fn(SlideshowItem $item) => [
-            'type' => $item->type,
-            'duration' => $item->duration,
-            'image' => $item->type === 'image' ? route('images.show', $item->data['image'], false) : null,
-            'url' => data_get($item->data, 'url'),
-            'reload' => data_get($item->data, 'reload', false),
-            'caption' => $item->type === 'image' ? $item->data['caption'] ?? null : null,
-            'captionPosition' => $item->data['caption_position'] ?? 'below',
-        ])->values()->all();
+        $media = Media::findMany($this->items->pluck('data.media')->filter())->keyBy('id');
+
+        return $this->items->sortBy('id')->map(function (SlideshowItem $item) use ($media) {
+            $file = $item->type === 'media' ? $media->get($item->data['media']) : null;
+
+            return [
+                'type' => $item->type,
+                'duration' => $item->duration ?? $file?->duration,
+                'src' => $file ? route('media.show', $file, false) : null,
+                'video' => $file?->type === 'video',
+                'loop' => $item->duration !== null,
+                'url' => data_get($item->data, 'url'),
+                'reload' => data_get($item->data, 'reload', false),
+                'caption' => $file ? $item->data['caption'] ?? null : null,
+                'captionPosition' => $item->data['caption_position'] ?? 'below',
+            ];
+        })->values()->all();
     }
 
     public function items(): HasMany

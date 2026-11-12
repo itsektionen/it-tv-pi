@@ -10,9 +10,9 @@
         },
         syncQuery() {
             const url = new URL(window.location);
-    
+
             this.search ? url.searchParams.set('search', this.search) : url.searchParams.delete('search');
-    
+
             history.replaceState(null, '', url);
         },
         matches(name) {
@@ -26,7 +26,7 @@
                 <x-button class="ml-auto" variant="ghost" commandfor="create-dialog" command="show-modal">Create
                     Slideshow</x-button>
                 <x-slideshow-dialog id="create-dialog" />
-                <x-image-picker-dialog id="image-picker-dialog" />
+                <x-media-picker-dialog id="media-picker-dialog" />
             @endcan
         </div>
 

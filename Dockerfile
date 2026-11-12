@@ -4,12 +4,12 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-    ca-certificates apache2 libapache2-mod-php8.4 php8.4-cli php8.4-opcache \
+    ca-certificates apache2 ffmpeg libapache2-mod-php8.4 php8.4-cli php8.4-opcache \
     php8.4-bcmath php8.4-curl php8.4-gd php8.4-intl php8.4-mbstring php8.4-mysql php8.4-xml php8.4-zip php-redis \
     && rm -rf /var/lib/apt/lists/* \
     && php -r 'exit(PHP_VERSION_ID >= 80427 ? 0 : 1);'
 
-RUN printf '%s\n' 'memory_limit=256M' 'upload_max_filesize=12M' 'post_max_size=16M' \
+RUN printf '%s\n' 'memory_limit=256M' 'upload_max_filesize=101M' 'post_max_size=105M' \
     | tee /etc/php/8.4/apache2/conf.d/99-app.ini > /etc/php/8.4/cli/conf.d/99-app.ini \
     && sed -ri 's!^Listen 80$!Listen 8080!' /etc/apache2/ports.conf \
     && sed -ri 's!<VirtualHost \*:80>!<VirtualHost *:8080>!; s!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf \
@@ -56,7 +56,7 @@ USER www-data
 RUN composer dump-autoload --no-dev --optimize \
     && mkdir -p \
     bootstrap/cache \
-    storage/app/private/images \
+    storage/app/private/media \
     storage/app/public \
     storage/framework/cache/data \
     storage/framework/sessions \
