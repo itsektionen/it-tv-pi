@@ -10,18 +10,15 @@
             this.error = null;
 
             try {
-                const response = await fetch(@js($user ? route('users.update', $user) : route('users.store')), {
+                const { ok, data } = await sendJson(@js($user ? route('users.update', $user) : route('users.store')), {
                     method: @js($user ? 'PUT' : 'POST'),
-                    headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': @js(csrf_token()) },
-                    body: JSON.stringify({ name: this.name, password: this.password || null, permission: this.permission }),
+                    body: { name: this.name, password: this.password || null, permission: this.permission },
                 });
-
-                if (response.ok) {
+                if (ok) {
                     window.location.reload();
                     return;
                 }
-
-                this.error = (await response.json()).message;
+                this.error = data.message;
             } catch {
                 this.error = 'Could not save the user.';
             }

@@ -37,18 +37,15 @@
             this.saving = true;
 
             try {
-                const response = await fetch(@js($slideshow ? route('slideshows.update', $slideshow) : route('slideshows.store')), {
+                const { ok, data } = await sendJson(@js($slideshow ? route('slideshows.update', $slideshow) : route('slideshows.store')), {
                     method: @js($slideshow ? 'PUT' : 'POST'),
-                    headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': @js(csrf_token()) },
-                    body: JSON.stringify({ name: this.name, sections: this.sections }),
+                    body: { name: this.name, sections: this.sections },
                 });
-
-                if (response.ok) {
+                if (ok) {
                     window.location.reload();
                     return;
                 }
-
-                this.error = (await response.json()).message;
+                this.error = data.message;
             } catch {
                 this.error = 'Could not save the slideshow.';
             }
