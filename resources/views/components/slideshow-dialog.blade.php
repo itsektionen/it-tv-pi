@@ -8,7 +8,13 @@
                 fn($item) => [
                     'type' => $item->type,
                     'duration' => $item->duration,
-                    'data' => ['image' => $item->data['image'] ?? null, 'url' => $item->data['url'] ?? null, 'reload' => $item->data['reload'] ?? true],
+                    'data' => [
+                        'image' => $item->data['image'] ?? null,
+                        'caption' => $item->data['caption'] ?? null,
+                        'caption_position' => $item->data['caption_position'] ?? 'below',
+                        'url' => $item->data['url'] ?? null,
+                        'reload' => $item->data['reload'] ?? true,
+                    ],
                 ],
             )
             ->values()
@@ -20,6 +26,7 @@
     <div class="space-y-3" x-data="{
         name: @js($slideshow?->name ?? ''),
         error: null,
+        saving: false,
         sections: @js($sections),
         endpoint: '{{ route('images.store') }}',
         move(index, offset) {
@@ -27,23 +34,26 @@
         },
         async save() {
             this.error = null;
-    
+            this.saving = true;
+
             try {
                 const response = await fetch(@js($slideshow ? route('slideshows.update', $slideshow) : route('slideshows.store')), {
                     method: @js($slideshow ? 'PUT' : 'POST'),
                     headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': @js(csrf_token()) },
                     body: JSON.stringify({ name: this.name, sections: this.sections }),
                 });
-    
+
                 if (response.ok) {
                     window.location.reload();
                     return;
                 }
-    
+
                 this.error = (await response.json()).message;
             } catch {
                 this.error = 'Could not save the slideshow.';
             }
+
+            this.saving = false;
         },
     }">
         <dl class="flex justify-between">
@@ -107,6 +117,16 @@
                                     class="max-h-40 border border-mauve-700">
                             </template>
                         </dd>
+                        <dt x-show="section.type == 'image'" class="text-mauve-400">Caption</dt>
+                        <dd x-show="section.type == 'image'"><x-input x-model="section.data.caption"
+                                placeholder="Optional" maxlength="255" /></dd>
+                        <dt x-show="section.type == 'image' && section.data.caption" class="text-mauve-400">Caption position</dt>
+                        <dd x-show="section.type == 'image' && section.data.caption">
+                            <x-select x-model="section.data.caption_position">
+                                <x-option value="below">Below image</x-option>
+                                <x-option value="above">Above image</x-option>
+                            </x-select>
+                        </dd>
                     </div>
                 </dl>
             </template>
@@ -116,10 +136,11 @@
 
         <div class="flex justify-end gap-2">
             <x-button variant="outline" class="mr-auto"
-                x-on:click="sections.push({ type: 'image', duration: 5, data: { image: null, url: null, reload: true }})">Add Section</x-button>
+                x-on:click="sections.push({ type: 'image', duration: 5, data: { image: null, caption: null, caption_position: 'below', url: null, reload: true }})">Add Section</x-button>
 
             <x-button variant="ghost" commandfor="{{ $id }}" command="close">Cancel</x-button>
-            <x-button x-on:click="save()">{{ $slideshow ? 'Save' : 'Create' }}</x-button>
+            <x-button x-on:click="save()" ::disabled="saving"
+                class="disabled:cursor-default disabled:opacity-50">{{ $slideshow ? 'Save' : 'Create' }}</x-button>
         </div>
     </div>
 </dialog>

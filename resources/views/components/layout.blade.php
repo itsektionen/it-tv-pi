@@ -9,6 +9,7 @@
             'presets' => ['label' => 'presets', 'can' => 'viewer'],
             'images' => ['label' => 'images', 'can' => 'viewer'],
             'users' => ['label' => 'users', 'can' => 'admin'],
+            'api-keys' => ['label' => 'api keys', 'can' => 'admin'],
         ],
         fn($tab) => $tab['guest'] ?? false ? auth()->guest() : auth()->user()?->can($tab['can']),
     );
