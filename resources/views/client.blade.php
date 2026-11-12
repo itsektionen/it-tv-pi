@@ -33,20 +33,11 @@
             startedAt: @js($state['startedAt']),
             offset: @js(now()->getTimestampMs()) - Date.now(),
             current: 0,
-            fading: false,
-            preloadIdx: null,
-            loadMs: {},
-            fadeMs: 1100,
-            defaultLoadMs: 3000,
-            loadPaddingMs: 500,
-            minLeadMs: 1000,
-            maxLeadMs: 10000,
             now: new Date(),
             init() {
                 @if ($screen) window.Echo.channel(@js($screen->channel())).listen('ActiveSlideshowChanged', (state) => {
                             this.items = state.items;
                             this.startedAt = state.startedAt;
-                            this.preloadIdx = null;
                         }); @endif
 
                 this.tick();
@@ -62,93 +53,42 @@
                     return;
                 }
 
-                const elapsed = ((time - this.startedAt) % total + total) % total;
+                let elapsed = ((time - this.startedAt) % total + total) % total;
 
-                const previous = this.current;
-                let slideEnd = 0;
-                this.current = this.items.findIndex((item) => (slideEnd += item.duration * 1000) > elapsed);
-                const untilNext = slideEnd - elapsed;
-
-                const duration = this.items[this.current].duration * 1000;
-                this.fading = duration - untilNext < this.fadeMs;
-
-                if (this.current !== previous) {
-                    this.preloadIdx = null;
-                }
-
-                const next = this.neighbour(1);
-                if (untilNext <= this.lead(this.items[next])) {
-                    this.preloadIdx = next;
-                }
-            },
-            neighbour(step) {
-                const count = this.items.length;
-
-                return ((this.current + step) % count + count) % count;
-            },
-            lead(item) {
-                const loadMs = this.loadMs[item.url] ?? this.defaultLoadMs;
-
-                return Math.min(Math.max(loadMs + this.loadPaddingMs, this.minLeadMs), this.maxLeadMs);
-            },
-            visible(index) {
-                return index === this.current || (this.fading && index === this.neighbour(-1));
-            },
-            preloading(index) {
-                return index === this.preloadIdx;
-            },
-            needsFrame(index) {
-                const item = this.items[index];
-
-                return item.type === 'iframe' && /^https?:\/\//i.test(item.url)
-                    && (this.visible(index) || this.preloading(index));
-            },
-            parkedStyle(index) {
-                return this.preloading(index) && !this.visible(index) ? 'transform: translateX(-200vw)' : '';
-            },
-            isBlankFrame(el) {
-                try {
-                    return el.contentWindow.location.href === 'about:blank';
-                } catch {
-                    return false;
-                }
-            },
-            measured(el, item) {
-                if (this.isBlankFrame(el)) {
-                    return;
-                }
-
-                this.loadMs[item.url] = Date.now() - el._mountedAt;
+                this.current = this.items.findIndex((item) => (elapsed -= item.duration * 1000) < 0);
             },
             shown(index) {
-                return [-1, 0].some((step) => this.neighbour(step) === index);
+                const count = this.items.length;
+
+                return [-1, 0].some((step) => ((this.current + step) % count + count) % count === index);
             },
             upcoming(index) {
-                return !this.shown(index) && this.neighbour(1) === index;
+                return !this.shown(index) && (this.current + 1) % this.items.length === index;
             },
         }">
             <template x-for="(item, index) in items">
                 <div class="absolute inset-0 flex items-center justify-center transition-opacity duration-1000"
-                    :class="current === index ? 'opacity-100' : 'opacity-0'"
-                    :style="parkedStyle(index)">
+                    :class="current === index ? 'opacity-100' : 'opacity-0'">
                     <template x-if="item.type === 'image' && upcoming(index)">
                         <link rel="preload" as="image" :href="item.image">
                     </template>
-                    <template x-if="shown(index) || needsFrame(index)">
+                    <template x-if="shown(index)">
                         <div class="contents">
-                            <template x-if="item.type === 'image'">
+                            <template x-if="item.type === 'image' && !item.caption">
                                 <img :src="item.image" class="size-full object-contain">
                             </template>
-                            <template x-if="needsFrame(index)">
-                                <iframe
-                                    x-init="$el._mountedAt = Date.now()"
-                                    @load="measured($el, item)"
-                                    :src="item.url"
-                                    sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
-                                    referrerpolicy="strict-origin-when-cross-origin"
-                                    allow="autoplay; fullscreen"
-                                    scrolling="no"
-                                    class="pointer-events-none size-full border-0 bg-black"></iframe>
+                            <template x-if="item.type === 'image' && item.caption">
+                                <div class="grid size-full grid-cols-1 bg-black p-[5vh]"
+                                    :class="item.captionPosition === 'above' ? 'grid-rows-[auto_minmax(0,1fr)]' : 'grid-rows-[minmax(0,1fr)_auto]'">
+                                    <div class="flex items-center justify-center [container-type:size]">
+                                        <img :src="item.image"
+                                            x-on:load="$el.style.setProperty('--ratio', $el.naturalWidth / $el.naturalHeight)"
+                                            class="box-content border-[0.4vh] border-white p-[0.8vh] w-[min(100cqw-2.4vh,(100cqh-2.4vh)*var(--ratio,1))]">
+                                    </div>
+                                    <p class="text-center font-serif text-[6vh] leading-tight text-white"
+                                        :class="item.captionPosition === 'above' ? 'order-first pb-[3vh]' : 'pt-[3vh]'"
+                                        x-text="item.caption"></p>
+                                </div>
                             </template>
                             <template x-if="item.type === 'clock'">
                                 <div class="w-fit flex items-center flex-col">
