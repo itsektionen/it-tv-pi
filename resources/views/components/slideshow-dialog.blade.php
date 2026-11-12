@@ -13,7 +13,7 @@
                         'caption' => $item->data['caption'] ?? null,
                         'caption_position' => $item->data['caption_position'] ?? 'below',
                         'url' => $item->data['url'] ?? null,
-                        'reload' => $item->data['reload'] ?? true,
+                        'reload' => $item->data['reload'] ?? false,
                     ],
                 ],
             )
@@ -102,7 +102,7 @@
                         <dt x-show="section.type == 'iframe'" class="text-mauve-400">Reload</dt>
                         <dd x-show="section.type == 'iframe'">
                             <label class="flex cursor-pointer select-none items-center gap-2 py-0.5"
-                                title="Load a fresh copy of the page each time the slide comes up. Turn off to keep it running in the background (e.g. a video), which also keeps any audio playing.">
+                                title="Load a fresh copy of the page each time the slide comes up. Turned off, it stays in the background.">
                                 <input type="checkbox" x-model="section.data.reload" class="accent-mauve-500">
                                 Reload each time
                             </label>
@@ -136,7 +136,7 @@
 
         <div class="flex justify-end gap-2">
             <x-button variant="outline" class="mr-auto"
-                x-on:click="sections.push({ type: 'image', duration: 5, data: { image: null, caption: null, caption_position: 'below', url: null, reload: true }})">Add Section</x-button>
+                x-on:click="sections.push({ type: 'image', duration: 5, data: { image: null, caption: null, caption_position: 'below', url: null, reload: false }})">Add Section</x-button>
 
             <x-button variant="ghost" commandfor="{{ $id }}" command="close">Cancel</x-button>
             <x-button x-on:click="save()" ::disabled="saving"
