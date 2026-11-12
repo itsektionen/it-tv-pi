@@ -20,6 +20,7 @@
     <div class="space-y-3" x-data="{
         name: @js($slideshow?->name ?? ''),
         error: null,
+        saving: false,
         sections: @js($sections),
         endpoint: '{{ route('images.store') }}',
         move(index, offset) {
@@ -27,6 +28,7 @@
         },
         async save() {
             this.error = null;
+            this.saving = true;
     
             try {
                 const response = await fetch(@js($slideshow ? route('slideshows.update', $slideshow) : route('slideshows.store')), {
@@ -44,6 +46,8 @@
             } catch {
                 this.error = 'Could not save the slideshow.';
             }
+    
+            this.saving = false;
         },
     }">
         <dl class="flex justify-between">
@@ -106,7 +110,8 @@
                 x-on:click="sections.push({ type: 'image', duration: 5, data: { image: null }})">Add Section</x-button>
 
             <x-button variant="ghost" commandfor="{{ $id }}" command="close">Cancel</x-button>
-            <x-button x-on:click="save()">{{ $slideshow ? 'Save' : 'Create' }}</x-button>
+            <x-button x-on:click="save()" ::disabled="saving"
+                class="disabled:cursor-default disabled:opacity-50">{{ $slideshow ? 'Save' : 'Create' }}</x-button>
         </div>
     </div>
 </dialog>
